@@ -12,7 +12,7 @@ describe("splitBatch", () => {
   it("reads an optional Channel line per post", () => {
     const posts = splitBatch("Channel: Instagram\nPortfolio shot.\n---\nArgument post.", "linkedin");
     expect(posts[0]).toEqual({ channel: "instagram", text: "Portfolio shot." });
-    expect(posts[1].channel).toBe("linkedin");
+    expect(posts[1]?.channel).toBe("linkedin");
   });
   it("does not split on hyphens inside text and skips empty posts", () => {
     const posts = splitBatch("An award-winning team - really.\n---\n\n---\n", "tiktok");

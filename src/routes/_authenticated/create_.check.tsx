@@ -97,14 +97,14 @@ function CheckPostPage() {
     if (posts.length === 0) return void toast.error("Please paste at least one post.");
     setBusy(true);
     let failed = 0;
-    for (let i = 0; i < posts.length; i++) {
+    for (const [i, post] of posts.entries()) {
       setProgress(`Checking post ${i + 1} of ${posts.length}…`);
       try {
         await check({
           data: {
             brandId: k.brand.id,
-            channel: posts[i].channel,
-            text: posts[i].text,
+            channel: post.channel,
+            text: post.text,
             personaId: personaId === NONE ? null : personaId,
             goalId: goalId === NONE ? null : goalId,
           },

@@ -33,7 +33,7 @@ export function splitBatch(input: string, fallback: ChannelId): BatchPost[] {
     let channel = fallback;
     const m = /^[ \t]*channel[ \t]*:[ \t]*(.+?)[ \t]*(\n|$)/i.exec(text);
     if (m) {
-      channel = matchChannel(m[1]) ?? fallback;
+      channel = matchChannel(m[1] ?? "") ?? fallback;
       text = text.slice(m[0].length).replace(/^\s*\n/, "");
     }
     if (text.trim()) posts.push({ channel, text });

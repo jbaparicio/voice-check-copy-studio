@@ -62,6 +62,7 @@ const ACTIVITY: Record<string, string> = {
   edited: "edited the text",
   edited_selection: "changed some highlighted words",
   restored_version: "went back to an earlier version",
+  pasted_for_check: "pasted an existing post to check",
   reviewed: "ran the full brand check",
   submitted: "sent it for review",
   approved: "approved it",

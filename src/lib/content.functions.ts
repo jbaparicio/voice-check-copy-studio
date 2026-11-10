@@ -2,7 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import type { Json } from "@/integrations/supabase/types";
 import { CHANNEL_MAP, type ChannelId } from "./channels";
-import { emptyFields, type ContentFields } from "./content-types";
+import { emptyFields, splitPastedPost, type ContentFields } from "./content-types";
 import { normaliseSliders } from "./sliders";
 import { toPlainText } from "./plain-text";
 import { DASH_FIX, removeDashesFromFields, runBrandCheck } from "./brand-check";
@@ -541,6 +541,82 @@ async function saveReviewed(
   });
   return toGenerated(row);
 }
+
+/**
+ * "Check an existing post": save a post someone already wrote exactly as pasted (no writing model),
+ * run both brand checks on it and send it for review.
+ */
+export const checkExistingPost = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator(
+    (input: {
+      brandId: string;
+      channel: string;
+      text: string;
+      personaId?: string | null;
+      goalId?: string | null;
+    }) => {
+      const text = String(input.text ?? "");
+      if (!text.trim()) throw new Error("Please paste the post you want checked.");
+      if (!isChannel(input.channel)) throw new Error("Pick a channel.");
+      return {
+        brandId: String(input.brandId),
+        channel: input.channel as ChannelId,
+        text: text.replace(/\r\n/g, "\n").slice(0, 20000),
+        personaId: input.personaId || null,
+        goalId: input.goalId || null,
+      };
+    },
+  )
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    const { data: request, error: reqError } = await supabase
+      .from("content_requests")
+      .insert({
+        brand_id: data.brandId,
+        created_by: userId,
+        brief:
+          "Existing post written by a copywriter, checked exactly as written. There is no separate brief, image description or required structure to follow.",
+        persona_id: data.personaId,
+        goal_id: data.goalId,
+        channels: [data.channel],
+      })
+      .select("id")
+      .single();
+    if (reqError || !request) throw new Error("We couldn't save the post. Please try again.");
+
+    const fields = { ...emptyFields(), ...splitPastedPost(data.text) };
+    const { data: row, error } = await supabase
+      .from("content_items")
+      .insert({
+        request_id: request.id,
+        brand_id: data.brandId,
+        channel: data.channel,
+        fields: fields as unknown as Json,
+        created_by: userId,
+        change_note: "Pasted for checking",
+      })
+      .select("id")
+      .single();
+    if (error || !row) throw new Error("We couldn't save the post. Please try again.");
+    await supabase.from("activity_log").insert({
+      brand_id: data.brandId,
+      content_item_id: row.id,
+      actor: userId,
+      action: "pasted_for_check",
+      details: { persona_id: data.personaId, goal_id: data.goalId } as unknown as Json,
+    });
+
+    const ctx = await loadItemContext(supabase, row.id);
+    await saveReviewed(supabase, userId, ctx, fields, "reviewed", {});
+    const { error: statusError } = await supabase.rpc("set_content_status", {
+      _item: row.id,
+      _status: "in_review",
+      _comment: "",
+    });
+    if (statusError) throw new Error("The post was checked but couldn't be sent for review.");
+    return { itemId: row.id };
+  });
 
 /** The full AI brand check: a second pass on one draft. */
 export const reviewItem = createServerFn({ method: "POST" })

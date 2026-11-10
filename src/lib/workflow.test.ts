@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { availableActions, canDeleteDraft, csvCell, toCsv } from "./workflow";
+import { canPublish } from "./publish";
 
 describe("approval rules", () => {
   it("only approvers get the Approve button", () => {

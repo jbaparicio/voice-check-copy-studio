@@ -8,10 +8,50 @@ import {
   isReviewFresh,
   placeholderBadges,
   scanNumbers,
+  editorialDecision,
+  type ReviewItem,
   type AiReview,
 } from "./review";
 
 const fields = (body: string, hook = "") => ({ ...emptyFields(), body, hook, cta: "Talk to us." });
+
+const issue = (impact: ReviewItem["impact"], label = "Editorial issue"): ReviewItem => ({
+  id: label, category: "rules", label, status: impact === "send_back" || impact === "kill" ? "fail" : "warn", message: label, span: null, badge: null, suggestion: null, impact,
+});
+
+describe("BRS editorial scoring", () => {
+  it("approves a clean opinion without demanding evidence", () => {
+    expect(editorialDecision([])).toMatchObject({ verdict: "Approve", score: 100, checks: [] });
+  });
+  it.each(["Metric", "Hashtags", "Alt text", "Hook", "CTA"])("optional %s cannot lower readiness", (label) => {
+    expect(editorialDecision([issue("suggestion", label)])).toMatchObject({ verdict: "Approve", score: 100, checks: [] });
+  });
+  it("sends back an unsupported concrete result", () => {
+    const claim = { ...issue("send_back", "98% guest satisfaction"), category: "facts" as const, badge: "needs_confirmation" as const };
+    expect(editorialDecision([claim])).toMatchObject({ verdict: "Send back", score: 80 });
+  });
+  it("sends back a slogan closer, not an editable verdict", () => {
+    expect(editorialDecision([issue("send_back", "Space is the new story.")]).verdict).toBe("Send back");
+  });
+  it("sends back self-promotion without a fact", () => {
+    expect(editorialDecision([issue("send_back", "BRS self-promotion")]).verdict).toBe("Send back");
+  });
+  it.each(["elevate", "seamless", "game-changer", "unlock", "unforgettable", "synergy", "next-level", "cutting-edge"])("buzzword %s requires an edit", (word) => {
+    expect(editorialDecision([issue("edit", word)])).toMatchObject({ verdict: "Approve with edits", score: 95 });
+  });
+  it("NDA work recommends Kill, never an edit", () => {
+    expect(editorialDecision([issue("edit"), issue("kill", "Halvard Motors")])).toMatchObject({ verdict: "Kill", score: 0, mainProblem: "Halvard Motors" });
+  });
+  it("a repeated public client or missing credit requires a minimal edit", () => {
+    expect(editorialDecision([issue("edit", "Client credit")]).verdict).toBe("Approve with edits");
+  });
+  it.each(["LinkedIn without an argument", "Instagram without portfolio", "TikTok without video"])("wrong platform format: %s", (problem) => {
+    expect(editorialDecision([issue("send_back", problem)]).verdict).toBe("Send back");
+  });
+  it("hard deterministic failures cannot be overridden by a clean AI review", () => {
+    expect(editorialDecision([], [{ id: "dashes", label: "No dashes", status: "fail", message: "No dashes" }])).toMatchObject({ verdict: "Send back", score: 80 });
+  });
+});
 
 describe("AI brand check helpers", () => {
   it("Fix this replaces only the flagged words", () => {

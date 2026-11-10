@@ -6,6 +6,7 @@
 - [x] Basic brand check (banned words, preferred terms, spelling, length, hashtags, emoji, exclamation marks, never-mention names)
 
 ## Next
+- [ ] Recalibrate BRS editorial review and scoring; verify the exact opinion-post acceptance test
 - [x] Full second-pass AI brand check (tone, facts & numbers, name clearance, superlatives) with span-only fixes
 - [ ] Pull rules out of uploaded guidelines automatically
 - [x] Home dashboard

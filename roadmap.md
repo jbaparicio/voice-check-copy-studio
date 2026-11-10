@@ -1,7 +1,7 @@
 # Roadmap
 
 ## Current
-- [ ] Add visible BRS no-stacked-fragments rule and reviewer enforcement; verify exact festival post and short-sentence exceptions
+- [x] Add visible BRS no-stacked-fragments rule and reviewer enforcement; live festival post Send back with stacked opening first, complete short sentences Approve / 100, coffee stack Send back / 80; 64 tests passed
 - [x] Design-only contrast and review hierarchy polish; verified all four screens on desktop/mobile, saved copy/review values unchanged, and 75 relevant tests passing
 
 ## Done (v1)

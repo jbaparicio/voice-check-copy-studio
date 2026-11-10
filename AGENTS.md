@@ -29,3 +29,5 @@
 - Highlight-to-change replaces exactly one range via `src/lib/selection.ts` (`locateSelection` / `spliceText`) after `guardSuggestion`; the model only returns the replacement words.
 
 - Drafts from one brief by different writers are linked on the review page by `src/lib/siblings.ts` (same channel, author and brief within 30 minutes, or same request) — compare runs create one request per writer, so no extra column is needed.
+- "Killed" is a terminal status set only by approvers via `set_content_status` (reason required, logged as `killed` in `activity_log`); `stamp_content_item` blocks any update to a killed piece — so a must-never-run post can't be revived or published.
+- The no-dash brand rule is `noDashes` in `BrandKitForCheck` (on for brands named Battle Royal); its "Fix this" swaps punctuation in code (`removeDashesFromFields`), never via the writer.

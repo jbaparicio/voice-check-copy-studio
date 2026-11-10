@@ -48,6 +48,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { StatusBadge } from "@/components/review-panel";
+import { CreateModeSwitch } from "@/components/create-mode-switch";
 import { ErrorCard, ResultSkeleton } from "@/components/result-card";
 import { plainCopy } from "@/lib/publish";
 import { CHANNELS, defaultHashtags, getChannel, type ChannelId } from "@/lib/channels";
@@ -648,6 +649,7 @@ function CreatePage() {
             wide ? "max-w-[1180px]" : "max-w-[760px]",
           )}
         >
+          <CreateModeSwitch mode="write" />
           <h1 className="text-3xl font-medium">Create content</h1>
           <p className="mt-1 text-sm text-muted-foreground">
             Writing for <strong className="font-semibold text-foreground">{k.brand.name}</strong>.

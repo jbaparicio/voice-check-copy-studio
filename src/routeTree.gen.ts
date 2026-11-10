@@ -16,6 +16,7 @@ import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as AuthenticatedBrandKitRouteImport } from './routes/_authenticated/brand-kit'
 import { Route as AuthenticatedCreateRouteImport } from './routes/_authenticated/create'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as AuthenticatedGateRouteImport } from './routes/_authenticated/gate'
 import { Route as AuthenticatedLibraryRouteImport } from './routes/_authenticated/library'
 import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authenticated/onboarding'
 import { Route as AuthenticatedPublishRouteImport } from './routes/_authenticated/publish'
@@ -55,6 +56,11 @@ const AuthenticatedCreateRoute = AuthenticatedCreateRouteImport.update({
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedGateRoute = AuthenticatedGateRouteImport.update({
+  id: '/gate',
+  path: '/gate',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedLibraryRoute = AuthenticatedLibraryRouteImport.update({
@@ -97,6 +103,7 @@ export interface FileRoutesByFullPath {
   '/brand-kit': typeof AuthenticatedBrandKitRoute
   '/create': typeof AuthenticatedCreateRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/gate': typeof AuthenticatedGateRoute
   '/library': typeof AuthenticatedLibraryRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/publish': typeof AuthenticatedPublishRoute
@@ -111,6 +118,7 @@ export interface FileRoutesByTo {
   '/brand-kit': typeof AuthenticatedBrandKitRoute
   '/create': typeof AuthenticatedCreateRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/gate': typeof AuthenticatedGateRoute
   '/library': typeof AuthenticatedLibraryRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/publish': typeof AuthenticatedPublishRoute
@@ -127,6 +135,7 @@ export interface FileRoutesById {
   '/_authenticated/brand-kit': typeof AuthenticatedBrandKitRoute
   '/_authenticated/create': typeof AuthenticatedCreateRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/gate': typeof AuthenticatedGateRoute
   '/_authenticated/library': typeof AuthenticatedLibraryRoute
   '/_authenticated/onboarding': typeof AuthenticatedOnboardingRoute
   '/_authenticated/publish': typeof AuthenticatedPublishRoute
@@ -143,6 +152,7 @@ export interface FileRouteTypes {
     | '/brand-kit'
     | '/create'
     | '/dashboard'
+    | '/gate'
     | '/library'
     | '/onboarding'
     | '/publish'
@@ -157,6 +167,7 @@ export interface FileRouteTypes {
     | '/brand-kit'
     | '/create'
     | '/dashboard'
+    | '/gate'
     | '/library'
     | '/onboarding'
     | '/publish'
@@ -172,6 +183,7 @@ export interface FileRouteTypes {
     | '/_authenticated/brand-kit'
     | '/_authenticated/create'
     | '/_authenticated/dashboard'
+    | '/_authenticated/gate'
     | '/_authenticated/library'
     | '/_authenticated/onboarding'
     | '/_authenticated/publish'
@@ -238,6 +250,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/gate': {
+      id: '/_authenticated/gate'
+      path: '/gate'
+      fullPath: '/gate'
+      preLoaderRoute: typeof AuthenticatedGateRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/library': {
       id: '/_authenticated/library'
       path: '/library'
@@ -287,6 +306,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedBrandKitRoute: typeof AuthenticatedBrandKitRoute
   AuthenticatedCreateRoute: typeof AuthenticatedCreateRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedGateRoute: typeof AuthenticatedGateRoute
   AuthenticatedLibraryRoute: typeof AuthenticatedLibraryRoute
   AuthenticatedOnboardingRoute: typeof AuthenticatedOnboardingRoute
   AuthenticatedPublishRoute: typeof AuthenticatedPublishRoute
@@ -299,6 +319,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedBrandKitRoute: AuthenticatedBrandKitRoute,
   AuthenticatedCreateRoute: AuthenticatedCreateRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedGateRoute: AuthenticatedGateRoute,
   AuthenticatedLibraryRoute: AuthenticatedLibraryRoute,
   AuthenticatedOnboardingRoute: AuthenticatedOnboardingRoute,
   AuthenticatedPublishRoute: AuthenticatedPublishRoute,

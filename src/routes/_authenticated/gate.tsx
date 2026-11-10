@@ -141,11 +141,9 @@ function GatePage() {
         ) : gate.error ? (
           <p role="alert" className="text-sm text-destructive">We couldn't load the gate. Please refresh.</p>
         ) : rows.length === 0 ? (
-          <EmptyState
-            icon={DoorOpen}
-            title="Nothing waiting at the gate"
-            description="Posts sent for review show up here. Check several at once from the Check a post page."
-          />
+          <EmptyState icon={<DoorOpen className="size-6" aria-hidden="true" />} title="Nothing waiting at the gate">
+            Posts sent for review show up here. Check several at once from the Check a post page.
+          </EmptyState>
         ) : (
           <ul className="divide-y divide-border rounded-lg border border-border">
             {rows.map((row) => (

@@ -8,6 +8,13 @@
       "when": 1794311776783,
       "tag": "0000_add_killed_status",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1794312276560,
+      "tag": "0001_restore_signup_trigger",
+      "breakpoints": true
     }
   ]
 }

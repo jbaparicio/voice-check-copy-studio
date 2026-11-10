@@ -17,7 +17,7 @@ export interface ReviewItem extends BrandCheckItem {
   badge: ReviewBadge | null;
   /** Replacement text for `span` only. */
   suggestion: string | null;
-  impact?: ReviewImpact;
+  impact?: ReviewImpact | undefined;
 }
 
 export interface AiReview {

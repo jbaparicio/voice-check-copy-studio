@@ -88,6 +88,7 @@ export function runBrandCheck(
 ): BrandCheckResult {
   const channel = getChannel(channelId);
   const text = allText(fields);
+  const editorial = Boolean(kit.noDashes);
   const checks: BrandCheckItem[] = [];
 
   // 1. Banned words
@@ -159,7 +160,11 @@ export function runBrandCheck(
 
   // 4. Length
   const count = countedText(fields).length;
-  const ls = lengthStatus(channel, count);
+  // For BRS, the lower end is advice, not a reason to pad a good argument.
+  // Upper ranges and platform hard limits still use the existing check.
+  const ls = editorial && count > 0 && count < channel.range[0]
+    ? "good"
+    : lengthStatus(channel, count);
   const [min, max] = channel.range;
   const tooLong = count > max;
   checks.push({
@@ -168,7 +173,9 @@ export function runBrandCheck(
     status: ls === "good" ? "pass" : ls === "close" ? "warn" : "fail",
     message:
       ls === "good"
-        ? `${count.toLocaleString("en-GB")} characters — inside the recommended ${min.toLocaleString("en-GB")}–${max.toLocaleString("en-GB")}.`
+        ? editorial && count < min
+          ? `${count.toLocaleString("en-GB")} characters. A concise argument is fine; no need to pad it to the suggested minimum.`
+          : `${count.toLocaleString("en-GB")} characters — inside the recommended ${min.toLocaleString("en-GB")}–${max.toLocaleString("en-GB")}.`
         : `${count.toLocaleString("en-GB")} characters. ${channel.short} works best between ${min.toLocaleString("en-GB")} and ${max.toLocaleString("en-GB")}${channel.hardLimit && count > channel.hardLimit ? `, and the limit is ${channel.hardLimit.toLocaleString("en-GB")}` : ""}.`,
     fix:
       ls === "good"
@@ -181,7 +188,9 @@ export function runBrandCheck(
   // 5. Hashtags
   const [hMin, hMax] = channel.hashtagRange;
   const hCount = fields.hashtags.length;
-  if (hMax === 0) {
+  if (editorial) {
+    checks.push({ id: "hashtags", label: "Hashtags", status: "pass", message: "Hashtags are optional and do not affect approval." });
+  } else if (hMax === 0) {
     checks.push(
       hCount
         ? {
@@ -243,16 +252,20 @@ export function runBrandCheck(
   }
 
   // 7. Exclamation marks
-  const allowed = kit.exclamationAllowed[channel.id] ?? true;
-  const bangs = (text.match(/!/g) ?? []).length;
+  const allowed = editorial ? channel.id !== "linkedin" : kit.exclamationAllowed[channel.id] ?? true;
+  // Hook and CTA mirror the body: don't count those copies twice.
+  const punctuationText = editorial
+    ? [fields.body, fields.subject_line, fields.h1, fields.alt_text, ...(fields.on_screen_text ?? [])].filter(Boolean).join("\n")
+    : text;
+  const bangs = (punctuationText.match(/!/g) ?? []).length;
   checks.push(
-    !allowed && bangs > 0
+    (!allowed && bangs > 0) || (editorial && bangs > 1)
       ? {
           id: "exclamation",
           label: "Exclamation marks",
           status: "warn",
-          message: `Uses ${bangs} exclamation mark${bangs > 1 ? "s" : ""}. Your brand doesn't use them on ${channel.short}.`,
-          fix: "Replace every exclamation mark with a full stop or rephrase. Change nothing else.",
+          message: editorial && allowed ? "BRS allows at most one exclamation mark on this channel." : `Uses ${bangs} exclamation mark${bangs > 1 ? "s" : ""}. Your brand doesn't use them on ${channel.short}.`,
+          fix: editorial && allowed ? "Keep at most one exclamation mark. Change nothing else." : "Replace every exclamation mark with a full stop or rephrase. Change nothing else.",
         }
       : {
           id: "exclamation",

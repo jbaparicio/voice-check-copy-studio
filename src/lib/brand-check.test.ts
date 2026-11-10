@@ -97,6 +97,19 @@ describe("placeholders", () => {
 
 describe("no-dash rule (BRS)", () => {
   const brs = { ...kit, noDashes: true };
+  it("does not penalise missing hashtags or a concise BRS argument", () => {
+    const r = runBrandCheck(body("When does your live team first see the campaign brief?", []), "linkedin", brs);
+    expect(r.score).toBe(100);
+  });
+  it("still rejects an over-limit BRS post", () => {
+    expect(runBrandCheck(body("a".repeat(3001), []), "linkedin", brs).checks.find((c) => c.id === "length")?.status).toBe("fail");
+  });
+  it("allows one exclamation elsewhere but not two, without counting mirrored fields", () => {
+    const f = { ...body("A room worth seeing!", []), hook: "A room worth seeing!", cta: "A room worth seeing!" };
+    expect(runBrandCheck(f, "instagram", brs).checks.find((c) => c.id === "exclamation")?.status).toBe("pass");
+    expect(runBrandCheck({ ...f, body: "A room worth seeing! Come inside!" }, "instagram", brs).checks.find((c) => c.id === "exclamation")?.status).toBe("warn");
+    expect(runBrandCheck(f, "linkedin", brs).checks.find((c) => c.id === "exclamation")?.status).toBe("warn");
+  });
   it("fails on an em dash", () => {
     const r = runBrandCheck(body(`${longText} We build — you feel.`), "linkedin", brs);
     expect(r.checks.find((c) => c.id === "dashes")?.status).toBe("fail");

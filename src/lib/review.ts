@@ -7,6 +7,8 @@ import { allText, type BrandCheckItem, type ContentFields } from "./content-type
 
 export type ReviewCategory = "tone" | "facts" | "names" | "superlatives" | "rules";
 export type ReviewBadge = "needs_confirmation" | "needs_clearance";
+export type ReviewVerdict = "Approve" | "Approve with edits" | "Send back" | "Kill";
+export type ReviewImpact = "suggestion" | "edit" | "send_back" | "kill";
 
 export interface ReviewItem extends BrandCheckItem {
   category: ReviewCategory;
@@ -15,6 +17,7 @@ export interface ReviewItem extends BrandCheckItem {
   badge: ReviewBadge | null;
   /** Replacement text for `span` only. */
   suggestion: string | null;
+  impact?: ReviewImpact | undefined;
 }
 
 export interface AiReview {
@@ -24,6 +27,21 @@ export interface AiReview {
   /** Fingerprint of the text that was reviewed, so edits can mark it out of date. */
   fingerprint: string;
   reviewed_at: string;
+  verdict?: ReviewVerdict;
+  main_problem?: string;
+}
+
+/** Optional extras never affect readiness; one editorial decision owns score and verdict. */
+export function editorialDecision(checks: ReviewItem[], basic: BrandCheckItem[] = []) {
+  const issues = checks.filter((c) => c.status !== "pass" && c.impact !== "suggestion");
+  const hard = basic.filter((c) => c.status !== "pass");
+  const kill = issues.some((c) => c.impact === "kill");
+  const sendBack = issues.some((c) => c.impact === "send_back" || c.status === "fail") || hard.some((c) => c.status === "fail");
+  const verdict: ReviewVerdict = kill ? "Kill" : sendBack ? "Send back" : issues.length || hard.length ? "Approve with edits" : "Approve";
+  const penalties = [...issues, ...hard];
+  const score = kill ? 0 : Math.max(0, 100 - penalties.reduce((sum, c) => sum + (c.status === "fail" ? 20 : 5), 0));
+  const mainProblem = issues.find((c) => c.impact === "kill")?.message ?? issues[0]?.message ?? hard[0]?.message ?? "No material issues.";
+  return { verdict, score, mainProblem, checks: issues };
 }
 
 export const BADGE_LABEL: Record<ReviewBadge, string> = {

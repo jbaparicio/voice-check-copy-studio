@@ -162,13 +162,13 @@ export function ReviewPanel({
     <div className="space-y-5">
       <section
         aria-label="Status"
-        className="z-10 rounded-xl border bg-card p-5 lg:sticky lg:top-4 lg:shadow-sm"
+        className="z-10 rounded-lg border bg-card p-5 shadow-card lg:sticky lg:top-4"
       >
         <div className="flex items-center justify-between gap-2">
           <h2 className="font-sans text-base font-semibold">Status</h2>
           <StatusBadge status={status} />
         </div>
-        <p className="mt-2 text-sm text-muted-foreground">{STATUS_HELP[status]}</p>
+        <p className="mt-2 text-sm leading-relaxed text-foreground">{STATUS_HELP[status]}</p>
         {status === "approved" && item.approved_at && (
           <p className="mt-3 flex items-center gap-2 rounded-lg bg-success-soft px-3 py-2 text-sm text-success">
             <CheckCircle2 className="size-4 shrink-0" aria-hidden="true" />
@@ -204,13 +204,14 @@ export function ReviewPanel({
           {actions.map((a) => (
             <Button
               key={a}
-              size="sm"
+              size={a === "approve" ? "lg" : "sm"}
+              className={a === "approve" ? "w-full text-base font-semibold" : undefined}
               variant={
                 a === "approve" || a === "submit"
                   ? "default"
                   : a === "kill"
-                    ? "destructive"
-                    : "outline"
+                    ? "destructive-quiet"
+                    : a === "back_to_draft" ? "ghost" : "outline"
               }
               disabled={busy}
               onClick={() =>
@@ -248,7 +249,7 @@ export function ReviewPanel({
 
       {children}
 
-      <section aria-label="Activity" className="rounded-xl border bg-card p-5">
+      <section aria-label="Activity" className="rounded-lg border bg-card p-5 shadow-card">
         <h2 className="flex items-center gap-1.5 font-sans text-base font-semibold">
           Activity
           <HelpTip>
@@ -271,7 +272,7 @@ export function ReviewPanel({
               };
               const flagged = (d.flagged ?? []).map((f) => (typeof f === "string" ? f : f.label));
               return (
-                <li key={a.id} className="relative text-sm">
+                <li key={a.id} className="relative text-sm leading-relaxed text-foreground">
                   <span
                     className="absolute -left-[21px] top-1.5 size-2.5 rounded-full bg-primary"
                     aria-hidden="true"
@@ -293,13 +294,13 @@ export function ReviewPanel({
                     </p>
                   )}
                   {a.action !== "submitted" && flagged.length > 0 && (
-                    <p className="mt-1 text-xs text-muted-foreground" title={flagged.join(", ")}>
+                    <p className="mt-1 text-sm text-foreground" title={flagged.join(", ")}>
                       Flagged: {flagged.slice(0, 3).join(", ")}
                       {flagged.length > 3 && ` and ${flagged.length - 3} more`}
                     </p>
                   )}
                   {d.request && a.action === "adjusted" && (
-                    <p className="mt-1 text-xs text-muted-foreground">Asked for: {d.request}</p>
+                    <p className="mt-1 text-sm text-foreground">Asked for: {d.request}</p>
                   )}
                 </li>
               );

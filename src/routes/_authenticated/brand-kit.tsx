@@ -56,7 +56,7 @@ function BrandKitPage() {
   const kit = useBrandKit(brand?.id);
 
   return (
-    <div>
+    <div className="brand-kit-screen">
       <PageHeader
         title="Brand Kit"
         description={
@@ -78,7 +78,7 @@ function BrandKitPage() {
               <TabsTrigger
                 key={t.id}
                 value={t.id}
-                className="rounded-full border border-transparent px-4 py-2 data-[state=active]:border-border data-[state=active]:bg-card data-[state=active]:shadow-sm"
+                className="rounded-md border border-transparent px-4 py-2 text-muted-foreground data-[state=active]:border-primary/40 data-[state=active]:bg-card data-[state=active]:text-primary data-[state=active]:shadow-card"
               >
                 {t.label}
               </TabsTrigger>

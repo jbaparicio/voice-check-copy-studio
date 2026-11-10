@@ -11,12 +11,13 @@ import { ResultCard, plainCopy } from "@/components/result-card";
 import { PublishPanel } from "@/components/publish-panel";
 import { VersionHistory, versionsKey } from "@/components/version-history";
 import { ReviewPanel, formatDate } from "@/components/review-panel";
+import { ReviewVerdictBar } from "@/components/review-verdict";
 import { DraftSwitcher, useSiblingDrafts } from "@/components/draft-switcher";
 import { kitForCheck } from "@/lib/brand-kit";
 import type { GeneratedItem } from "@/lib/content.functions";
 import type { ChannelId } from "@/lib/channels";
 import { emptyFields, type ContentFields } from "@/lib/content-types";
-import { toAiReview } from "@/lib/review";
+import { isReviewFresh, toAiReview } from "@/lib/review";
 import { useBrandKit } from "@/lib/use-brand";
 import { cn } from "@/lib/utils";
 
@@ -158,11 +159,12 @@ function ItemPage() {
         <p className="mt-1 text-sm text-muted-foreground">
           {row.brands?.name} · written {formatDate(row.created_at)}
         </p>
+        <ReviewVerdictBar review={generated.ai_review} fresh={isReviewFresh(generated.ai_review, generated.fields)} />
         {row.content_requests?.brief && (
-          <div className="mt-3 max-w-3xl rounded-lg bg-muted/60 px-3 py-2 text-sm">
+          <div className="mt-3 max-w-3xl rounded-lg border bg-muted px-3 py-2 text-sm">
             <p className={cn("whitespace-pre-line", !briefOpen && "line-clamp-2")}>
               <span className="font-medium">Brief: </span>
-              <span className="text-muted-foreground">{row.content_requests.brief}</span>
+              <span className="text-foreground">{row.content_requests.brief}</span>
             </p>
             {row.content_requests.brief.length > 180 && (
               <button

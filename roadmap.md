@@ -24,3 +24,4 @@
 - [x] "Compare models and generate": toggle to write with 2 models and show them side by side
 - [x] Version history on the Review page (go back to any earlier version) + "rewrite with my note" after editing
 - [x] Highlight words in a draft and ask for a change to only that part
+- [ ] Add Battle Royal Studios brand kit (data only) to the owner's team — waiting for the first real sign-in on this copy

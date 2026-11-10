@@ -18,6 +18,7 @@ import {
 import { CreateModeSwitch } from "@/components/create-mode-switch";
 import { CHANNELS, type ChannelId } from "@/lib/channels";
 import { checkExistingPost } from "@/lib/content.functions";
+import { splitBatch } from "@/lib/batch";
 import { useActiveBrand, useBrandKit } from "@/lib/use-brand";
 
 export const Route = createFileRoute("/_authenticated/create_/check")({
@@ -53,6 +54,8 @@ function CheckPostPage() {
   const [personaId, setPersonaId] = useState(NONE);
   const [goalId, setGoalId] = useState(NONE);
   const [busy, setBusy] = useState(false);
+  const [bulk, setBulk] = useState(false);
+  const [progress, setProgress] = useState<string | null>(null);
 
   if (!kit.data) {
     return (
@@ -67,6 +70,7 @@ function CheckPostPage() {
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     if (!text.trim()) return void toast.error("Please paste the post you want checked.");
+    if (bulk) return void submitBulk();
     setBusy(true);
     try {
       const { itemId } = await check({
@@ -88,6 +92,38 @@ function CheckPostPage() {
     }
   }
 
+  async function submitBulk() {
+    const posts = splitBatch(text, channel);
+    if (posts.length === 0) return void toast.error("Please paste at least one post.");
+    setBusy(true);
+    let failed = 0;
+    for (const [i, post] of posts.entries()) {
+      setProgress(`Checking post ${i + 1} of ${posts.length}…`);
+      try {
+        await check({
+          data: {
+            brandId: k.brand.id,
+            channel: post.channel,
+            text: post.text,
+            personaId: personaId === NONE ? null : personaId,
+            goalId: goalId === NONE ? null : goalId,
+          },
+        });
+      } catch {
+        failed++;
+      }
+    }
+    qc.invalidateQueries({ queryKey: ["library"] });
+    qc.invalidateQueries({ queryKey: ["dashboard"] });
+    qc.invalidateQueries({ queryKey: ["gate"] });
+    const ok = posts.length - failed;
+    if (failed) toast.error(`${failed} of ${posts.length} posts couldn't be checked. Please try those again.`);
+    if (ok) toast.success(`${ok} ${ok === 1 ? "post" : "posts"} checked and waiting at the gate.`);
+    navigate({ to: "/gate" });
+  }
+
+  const batchCount = bulk ? splitBatch(text, channel).length : 0;
+
   return (
     <div className="mx-auto w-full max-w-[760px] px-5 py-6 md:px-8">
       <CreateModeSwitch mode="check" />
@@ -99,24 +135,57 @@ function CheckPostPage() {
       </p>
 
       <form onSubmit={submit} className="mt-6 space-y-5">
+        <div
+          role="radiogroup"
+          aria-label="How many posts"
+          className="inline-flex rounded-md border border-border bg-muted/40 p-1 text-sm"
+        >
+          {[
+            { v: false, label: "One post" },
+            { v: true, label: "Check several at once" },
+          ].map((o) => (
+            <button
+              key={o.label}
+              type="button"
+              role="radio"
+              aria-checked={bulk === o.v}
+              onClick={() => setBulk(o.v)}
+              className={`rounded px-3 py-1.5 transition-colors ${bulk === o.v ? "bg-background font-medium text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+            >
+              {o.label}
+            </button>
+          ))}
+        </div>
         <div className="space-y-2">
-          <Label htmlFor="pasted-post">The post</Label>
+          <Label htmlFor="pasted-post">{bulk ? "The posts" : "The post"}</Label>
+          {bulk && (
+            <p className="text-xs text-muted-foreground">
+              Put a line with only <code>---</code> between posts. A post can start with a line like{" "}
+              <code>Channel: Instagram</code>; otherwise the channel below is used.
+            </p>
+          )}
           <Textarea
             id="pasted-post"
             rows={14}
             value={text}
             onChange={(e) => setText(e.target.value)}
-            placeholder="Paste the full post here, including hashtags."
+            placeholder={
+              bulk
+                ? "First post…\n---\nChannel: Instagram\nSecond post…"
+                : "Paste the full post here, including hashtags."
+            }
             required
           />
           <p className="text-xs text-muted-foreground">
-            {text.length.toLocaleString("en-GB")} characters
+            {bulk
+              ? `${batchCount} ${batchCount === 1 ? "post" : "posts"} found`
+              : `${text.length.toLocaleString("en-GB")} characters`}
           </p>
         </div>
 
         <div className="grid gap-4 sm:grid-cols-3">
           <div className="space-y-2">
-            <Label htmlFor="check-channel">Channel</Label>
+            <Label htmlFor="check-channel">{bulk ? "Channel (default)" : "Channel"}</Label>
             <Select value={channel} onValueChange={(v) => setChannel(v as ChannelId)}>
               <SelectTrigger id="check-channel">
                 <SelectValue />
@@ -166,7 +235,11 @@ function CheckPostPage() {
 
         <Button type="submit" disabled={busy}>
           <ShieldCheck className="size-4" aria-hidden="true" />
-          {busy ? "Checking… this takes a few seconds" : "Check and send for review"}
+          {busy
+            ? (progress ?? "Checking… this takes a few seconds")
+            : bulk
+              ? "Check all and send to the gate"
+              : "Check and send for review"}
         </Button>
       </form>
     </div>

@@ -1,7 +1,7 @@
 # Roadmap
 
 ## Current
-- [ ] Design-only contrast and review hierarchy polish; verify review, Gate, Check a post and Brand Kit screenshots without changing saved data
+- [x] Design-only contrast and review hierarchy polish; verified all four screens on desktop/mobile, saved copy/review values unchanged, and 75 relevant tests passing
 
 ## Done (v1)
 - [x] Onboarding wizard, Brand Kit (8 tabs), Create flow, sliders & presets, result cards

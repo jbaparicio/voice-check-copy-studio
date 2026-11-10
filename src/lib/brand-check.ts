@@ -173,7 +173,9 @@ export function runBrandCheck(
     status: ls === "good" ? "pass" : ls === "close" ? "warn" : "fail",
     message:
       ls === "good"
-        ? `${count.toLocaleString("en-GB")} characters — inside the recommended ${min.toLocaleString("en-GB")}–${max.toLocaleString("en-GB")}.`
+        ? editorial && count < min
+          ? `${count.toLocaleString("en-GB")} characters. A concise argument is fine; no need to pad it to the suggested minimum.`
+          : `${count.toLocaleString("en-GB")} characters — inside the recommended ${min.toLocaleString("en-GB")}–${max.toLocaleString("en-GB")}.`
         : `${count.toLocaleString("en-GB")} characters. ${channel.short} works best between ${min.toLocaleString("en-GB")} and ${max.toLocaleString("en-GB")}${channel.hardLimit && count > channel.hardLimit ? `, and the limit is ${channel.hardLimit.toLocaleString("en-GB")}` : ""}.`,
     fix:
       ls === "good"

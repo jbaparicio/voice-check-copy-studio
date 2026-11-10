@@ -20,6 +20,7 @@ import { Route as AuthenticatedLibraryRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authenticated/onboarding'
 import { Route as AuthenticatedPublishRouteImport } from './routes/_authenticated/publish'
 import { Route as AuthenticatedTeamRouteImport } from './routes/_authenticated/team'
+import { Route as AuthenticatedCreateCheckRouteImport } from './routes/_authenticated/create_.check'
 import { Route as AuthenticatedLibraryItemIdRouteImport } from './routes/_authenticated/library_.$itemId'
 
 const IndexRoute = IndexRouteImport.update({
@@ -76,6 +77,12 @@ const AuthenticatedTeamRoute = AuthenticatedTeamRouteImport.update({
   path: '/team',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedCreateCheckRoute =
+  AuthenticatedCreateCheckRouteImport.update({
+    id: '/create_/check',
+    path: '/create/check',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedLibraryItemIdRoute =
   AuthenticatedLibraryItemIdRouteImport.update({
     id: '/library_/$itemId',
@@ -94,6 +101,7 @@ export interface FileRoutesByFullPath {
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/publish': typeof AuthenticatedPublishRoute
   '/team': typeof AuthenticatedTeamRoute
+  '/create/check': typeof AuthenticatedCreateCheckRoute
   '/library/$itemId': typeof AuthenticatedLibraryItemIdRoute
 }
 export interface FileRoutesByTo {
@@ -107,6 +115,7 @@ export interface FileRoutesByTo {
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/publish': typeof AuthenticatedPublishRoute
   '/team': typeof AuthenticatedTeamRoute
+  '/create/check': typeof AuthenticatedCreateCheckRoute
   '/library/$itemId': typeof AuthenticatedLibraryItemIdRoute
 }
 export interface FileRoutesById {
@@ -122,6 +131,7 @@ export interface FileRoutesById {
   '/_authenticated/onboarding': typeof AuthenticatedOnboardingRoute
   '/_authenticated/publish': typeof AuthenticatedPublishRoute
   '/_authenticated/team': typeof AuthenticatedTeamRoute
+  '/_authenticated/create_/check': typeof AuthenticatedCreateCheckRoute
   '/_authenticated/library_/$itemId': typeof AuthenticatedLibraryItemIdRoute
 }
 export interface FileRouteTypes {
@@ -137,6 +147,7 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/publish'
     | '/team'
+    | '/create/check'
     | '/library/$itemId'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -150,6 +161,7 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/publish'
     | '/team'
+    | '/create/check'
     | '/library/$itemId'
   id:
     | '__root__'
@@ -164,6 +176,7 @@ export interface FileRouteTypes {
     | '/_authenticated/onboarding'
     | '/_authenticated/publish'
     | '/_authenticated/team'
+    | '/_authenticated/create_/check'
     | '/_authenticated/library_/$itemId'
   fileRoutesById: FileRoutesById
 }
@@ -253,6 +266,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedTeamRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/create_/check': {
+      id: '/_authenticated/create_/check'
+      path: '/create/check'
+      fullPath: '/create/check'
+      preLoaderRoute: typeof AuthenticatedCreateCheckRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/library_/$itemId': {
       id: '/_authenticated/library_/$itemId'
       path: '/library/$itemId'
@@ -271,6 +291,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedOnboardingRoute: typeof AuthenticatedOnboardingRoute
   AuthenticatedPublishRoute: typeof AuthenticatedPublishRoute
   AuthenticatedTeamRoute: typeof AuthenticatedTeamRoute
+  AuthenticatedCreateCheckRoute: typeof AuthenticatedCreateCheckRoute
   AuthenticatedLibraryItemIdRoute: typeof AuthenticatedLibraryItemIdRoute
 }
 
@@ -282,6 +303,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedOnboardingRoute: AuthenticatedOnboardingRoute,
   AuthenticatedPublishRoute: AuthenticatedPublishRoute,
   AuthenticatedTeamRoute: AuthenticatedTeamRoute,
+  AuthenticatedCreateCheckRoute: AuthenticatedCreateCheckRoute,
   AuthenticatedLibraryItemIdRoute: AuthenticatedLibraryItemIdRoute,
 }
 

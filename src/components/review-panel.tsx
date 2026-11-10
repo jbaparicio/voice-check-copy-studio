@@ -1,7 +1,7 @@
 import { useState, type ReactNode } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
-import { CheckCircle2, Clock, MessageSquareWarning, RotateCcw, Send } from "lucide-react";
+import { Ban, CheckCircle2, Clock, MessageSquareWarning, RotateCcw, Send } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -34,6 +34,7 @@ const STATUS_STYLE: Record<ContentStatus, string> = {
   in_review: "bg-primary-soft text-accent-foreground border-primary/30",
   approved: "bg-success-soft text-success border-success/30",
   changes_requested: "bg-warning-soft text-warning border-warning/40",
+  killed: "bg-destructive/10 text-destructive border-destructive/40",
 };
 
 export function StatusBadge({ status, className }: { status: string; className?: string }) {
@@ -85,6 +86,7 @@ const ACTION_LABEL: Record<WorkflowAction, string> = {
   approve: "Approve",
   request_changes: "Request changes",
   back_to_draft: "Back to draft",
+  kill: "Kill / cannot run",
 };
 
 /** Status, approve / request-changes buttons (with a comment) and the activity log for one piece. */
@@ -123,6 +125,8 @@ export function ReviewPanel({
     status === "changes_requested"
       ? (activity.data ?? []).find((a) => a.action === "changes_requested")
       : undefined;
+  const killEvent =
+    status === "killed" ? (activity.data ?? []).find((a) => a.action === "killed") : undefined;
 
   async function act(action: WorkflowAction, note?: string) {
     setBusy(true);
@@ -140,7 +144,9 @@ export function ReviewPanel({
         ? "Approved."
         : action === "request_changes"
           ? "Changes requested. The writer will see your comment."
-          : action === "submit"
+          : action === "kill"
+            ? "Killed. This piece can't be edited or published."
+            : action === "submit"
             ? "Sent for review."
             : "Moved back to draft.",
     );
@@ -181,20 +187,42 @@ export function ReviewPanel({
           </div>
         )}
 
+        {killEvent && (
+          <div className="mt-3 rounded-lg border border-destructive/40 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+            <p className="flex items-center gap-2 font-medium">
+              <Ban className="size-4 shrink-0" aria-hidden="true" />
+              Killed by {names.data?.get(killEvent.actor ?? "") ?? "an approver"} on{" "}
+              {formatDate(killEvent.created_at, true)}
+            </p>
+            <p className="mt-1 whitespace-pre-line">
+              Reason: {String((killEvent.details as { comment?: string } | null)?.comment ?? "")}
+            </p>
+          </div>
+        )}
+
         <div className="mt-4 flex flex-wrap gap-2">
           {actions.map((a) => (
             <Button
               key={a}
               size="sm"
-              variant={a === "approve" || a === "submit" ? "default" : "outline"}
+              variant={
+                a === "approve" || a === "submit"
+                  ? "default"
+                  : a === "kill"
+                    ? "destructive"
+                    : "outline"
+              }
               disabled={busy}
-              onClick={() => (a === "approve" || a === "request_changes" ? setDialog(a) : act(a))}
+              onClick={() =>
+                a === "approve" || a === "request_changes" || a === "kill" ? setDialog(a) : act(a)
+              }
             >
               {a === "approve" && <CheckCircle2 className="size-3.5" aria-hidden="true" />}
               {a === "request_changes" && (
                 <MessageSquareWarning className="size-3.5" aria-hidden="true" />
               )}
               {a === "submit" && <Send className="size-3.5" aria-hidden="true" />}
+              {a === "kill" && <Ban className="size-3.5" aria-hidden="true" />}
               {a === "back_to_draft" && <RotateCcw className="size-3.5" aria-hidden="true" />}
               {ACTION_LABEL[a]}
             </Button>
@@ -295,12 +323,18 @@ export function ReviewPanel({
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
-              {dialog === "approve" ? "Approve this piece" : "Request changes"}
+              {dialog === "approve"
+                ? "Approve this piece"
+                : dialog === "kill"
+                  ? "Kill this piece"
+                  : "Request changes"}
             </DialogTitle>
             <DialogDescription>
               {dialog === "approve"
                 ? "Your name and today's date will be shown on it. Nothing is published automatically."
-                : "Say what needs to change. The writer will see your comment on the piece."}
+                : dialog === "kill"
+                  ? "This piece will never run. It can't be edited, approved or published afterwards. Your name, the date and your reason are recorded."
+                  : "Say what needs to change. The writer will see your comment on the piece."}
             </DialogDescription>
           </DialogHeader>
           <form
@@ -309,12 +343,18 @@ export function ReviewPanel({
               e.preventDefault();
               if (dialog === "request_changes" && !comment.trim())
                 return void toast.error("Please say what needs to change.");
+              if (dialog === "kill" && !comment.trim())
+                return void toast.error("Please give a short reason.");
               if (dialog) void act(dialog, comment);
             }}
             className="space-y-2"
           >
             <Label htmlFor="review-comment">
-              {dialog === "approve" ? "Comment (optional)" : "What needs to change?"}
+              {dialog === "approve"
+                ? "Comment (optional)"
+                : dialog === "kill"
+                  ? "Why can't it run?"
+                  : "What needs to change?"}
             </Label>
             <Textarea
               id="review-comment"
@@ -324,17 +364,24 @@ export function ReviewPanel({
               placeholder={
                 dialog === "approve"
                   ? "e.g. Lovely — publish on Tuesday morning."
-                  : "e.g. Please swap the opening line and confirm the guest number."
+                  : dialog === "kill"
+                    ? "e.g. NDA client"
+                    : "e.g. Please swap the opening line and confirm the guest number."
               }
-              required={dialog === "request_changes"}
+              required={dialog === "request_changes" || dialog === "kill"}
             />
           </form>
           <DialogFooter>
             <Button variant="ghost" onClick={() => setDialog(null)}>
               Cancel
             </Button>
-            <Button type="submit" form="review-form" disabled={busy}>
-              {dialog === "approve" ? "Approve" : "Send request"}
+            <Button
+              type="submit"
+              form="review-form"
+              disabled={busy}
+              variant={dialog === "kill" ? "destructive" : "default"}
+            >
+              {dialog === "approve" ? "Approve" : dialog === "kill" ? "Kill piece" : "Send request"}
             </Button>
           </DialogFooter>
         </DialogContent>

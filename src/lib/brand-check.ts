@@ -37,6 +37,50 @@ export function countEmoji(text: string): number {
   return (text.match(EMOJI_RE) ?? []).length;
 }
 
+/** Em dash, en dash, or a hyphen with spaces on both sides. Hyphens inside words are left alone. */
+const DASH_RE = /[ \t]*[—–][ \t]*|[ \t]+-[ \t]+/g;
+
+export const DASH_FIX =
+  "Replace every dash with a full stop or comma as fits the sentence. Change nothing else.";
+
+export function hasDashes(text: string): boolean {
+  return new RegExp(DASH_RE.source).test(text);
+}
+
+/** Swap each dash for a full stop or comma (or "to" in a number range). Touches nothing else. */
+export function removeDashes(text: string): string {
+  return text.replace(DASH_RE, (match, offset: number, str: string) => {
+    const prev = str[offset - 1];
+    const next = str[offset + match.length];
+    if (prev === undefined || prev === "\n") return "";
+    if (/\d/.test(prev) && next && /\d/.test(next) && match.trim() === match) return " to ";
+    if (/[.,:;!?]/.test(prev)) return next === undefined || next === "\n" ? "" : " ";
+    if (next === undefined || next === "\n") return ".";
+    if (/\p{Lu}/u.test(next)) return ". ";
+    return ", ";
+  });
+}
+
+export function removeDashesFromFields(fields: ContentFields): ContentFields {
+  const s = (v: string | null) => (v === null ? null : removeDashes(v));
+  return {
+    ...fields,
+    hook: removeDashes(fields.hook),
+    body: removeDashes(fields.body),
+    cta: removeDashes(fields.cta),
+    alt_text: s(fields.alt_text),
+    subject_line: s(fields.subject_line),
+    on_screen_text: fields.on_screen_text?.map(removeDashes) ?? null,
+    first_2s_hook: s(fields.first_2s_hook),
+    h1: s(fields.h1),
+    h2s: fields.h2s?.map(removeDashes) ?? null,
+    meta_description: s(fields.meta_description),
+    faq:
+      fields.faq?.map((f) => ({ question: removeDashes(f.question), answer: removeDashes(f.answer) })) ??
+      null,
+  };
+}
+
 export function runBrandCheck(
   fields: ContentFields,
   channelId: string,
@@ -230,7 +274,22 @@ export function runBrandCheck(
     });
   }
 
-  // 9. Placeholders someone still has to fill in or clear
+  // 9. No dashes (house rule for brands that don't use them)
+  if (kit.noDashes) {
+    checks.push(
+      hasDashes(`${text}\n${fields.alt_text ?? ""}`)
+        ? {
+            id: "dashes",
+            label: "No dashes",
+            status: "fail",
+            message: "BRS does not use dashes. Replace with a full stop, comma or colon.",
+            fix: DASH_FIX,
+          }
+        : { id: "dashes", label: "No dashes", status: "pass", message: "No dashes used." },
+    );
+  }
+
+  // 10. Placeholders someone still has to fill in or clear
   const withAlt = `${text}\n${fields.alt_text ?? ""}`;
   const placeholders = withAlt.match(/\[NEEDS CONFIRMATION[^\]]*\]/gi) ?? [];
   if (placeholders.length) {

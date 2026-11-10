@@ -41,6 +41,8 @@ export interface BrandKitForCheck {
   emojiPolicy: "none" | "sparing" | "free";
   exclamationAllowed: Partial<Record<ChannelId, boolean>>;
   neverNames: string[];
+  /** Brand doesn't use dashes (em dash, en dash or a spaced hyphen). */
+  noDashes?: boolean;
 }
 
 export function emptyFields(): ContentFields {

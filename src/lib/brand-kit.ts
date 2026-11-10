@@ -81,5 +81,7 @@ export function kitForCheck(kit: Pick<BrandKit, "brand" | "rules" | "names">): B
     emojiPolicy: kit.brand.emoji_policy as EmojiPolicy,
     exclamationAllowed: exclamationMap(kit.brand),
     neverNames: kit.names.filter((n) => n.status === "never").map((n) => n.name),
+    // Battle Royal Studios house rule: no dashes in copy.
+    noDashes: /battle\s*royal/i.test(kit.brand.name),
   };
 }

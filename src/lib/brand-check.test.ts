@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { runBrandCheck } from "./brand-check";
+import { removeDashes, runBrandCheck } from "./brand-check";
 import { emptyFields, type BrandKitForCheck } from "./content-types";
 import { findSpellingIssues } from "./spelling";
 import { getChannel, lengthStatus } from "./channels";
@@ -92,5 +92,31 @@ describe("placeholders", () => {
     expect(r.checks.find((c) => c.id === "placeholders")?.status).toBe("warn");
     expect(r.checks.find((c) => c.id === "clearance")?.status).toBe("warn");
     expect(r.score).toBeLessThan(100);
+  });
+});
+
+describe("no-dash rule (BRS)", () => {
+  const brs = { ...kit, noDashes: true };
+  it("fails on an em dash", () => {
+    const r = runBrandCheck(body(`${longText} We build — you feel.`), "linkedin", brs);
+    expect(r.checks.find((c) => c.id === "dashes")?.status).toBe("fail");
+  });
+  it("fails on an en dash and a spaced hyphen", () => {
+    expect(runBrandCheck(body(`${longText} Berlin – London.`), "linkedin", brs).checks.find((c) => c.id === "dashes")?.status).toBe("fail");
+    expect(runBrandCheck(body(`${longText} Berlin - London.`), "linkedin", brs).checks.find((c) => c.id === "dashes")?.status).toBe("fail");
+  });
+  it("does not flag hyphens inside words", () => {
+    const r = runBrandCheck(body(`${longText} An award-winning co-creation.`), "linkedin", brs);
+    expect(r.checks.find((c) => c.id === "dashes")?.status).toBe("pass");
+  });
+  it("is off for brands without the rule", () => {
+    const r = runBrandCheck(body(`${longText} We build — you feel.`), "linkedin", kit);
+    expect(r.checks.find((c) => c.id === "dashes")).toBeUndefined();
+  });
+  it("fix swaps only the punctuation", () => {
+    expect(removeDashes("We build — you feel.")).toBe("We build, you feel.");
+    expect(removeDashes("We build – That is it.")).toBe("We build. That is it.");
+    expect(removeDashes("Fast - and felt")).toBe("Fast, and felt");
+    expect(removeDashes("An award-winning co-creation.")).toBe("An award-winning co-creation.");
   });
 });

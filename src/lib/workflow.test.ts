@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { availableActions, canDeleteDraft, csvCell, toCsv } from "./workflow";
+import { canPublish } from "./publish";
 
 describe("approval rules", () => {
   it("only approvers get the Approve button", () => {
@@ -46,5 +47,19 @@ describe("deleting drafts", () => {
   it("pieces in review or approved can't be deleted", () => {
     expect(canDeleteDraft("in_review")).toBe(false);
     expect(canDeleteDraft("approved")).toBe(false);
+  });
+});
+
+describe("kill verdict", () => {
+  it("approvers can kill any live piece", () => {
+    expect(availableActions("in_review", true)).toContain("kill");
+    expect(availableActions("approved", true)).toContain("kill");
+  });
+  it("non-approvers cannot kill", () => {
+    expect(availableActions("in_review", false)).not.toContain("kill");
+  });
+  it("killed is terminal and never publishable", () => {
+    expect(availableActions("killed", true)).toEqual([]);
+    expect(canPublish("killed")).toBe(false);
   });
 });

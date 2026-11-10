@@ -5,7 +5,7 @@ import { CHANNEL_MAP, type ChannelId } from "./channels";
 import { emptyFields, type ContentFields } from "./content-types";
 import { normaliseSliders } from "./sliders";
 import { toPlainText } from "./plain-text";
-import { runBrandCheck } from "./brand-check";
+import { DASH_FIX, removeDashesFromFields, runBrandCheck } from "./brand-check";
 import { kitForCheck, loadBrandKit } from "./brand-kit";
 import { writeStructured, WriterError } from "./ai-gateway.server";
 import { DEFAULT_WRITER_MODEL, getWriterModel, isWriterModel } from "./models";
@@ -279,19 +279,26 @@ export const reviseItem = createServerFn({ method: "POST" })
         : data.note
           ? `${data.note}\nThe current draft includes edits a person made by hand — keep the parts they wrote unless the request says otherwise.`
           : "Write a fresh version of this piece. Keep the person's hand edits and the same facts, but improve the flow and the hook.";
-    const prompt = buildRevisionPrompt(
-      buildChannelPrompt(ctx.kit, ctx.channel, ctx.input),
-      current,
-      instruction,
-      Boolean(data.fix),
-    );
-    const { data: raw } = await writeStructured({
-      instructions: buildInstructions(ctx.kit),
-      prompt,
-      schema: contentSchema,
-      model,
-    });
-    const fields = cleanFields(raw);
+    // The no-dash fix swaps only the punctuation, in code — no rewrite.
+    const dashFix = data.fix === DASH_FIX;
+    let fields: ContentFields;
+    if (dashFix) {
+      fields = removeDashesFromFields(current);
+    } else {
+      const prompt = buildRevisionPrompt(
+        buildChannelPrompt(ctx.kit, ctx.channel, ctx.input),
+        current,
+        instruction,
+        Boolean(data.fix),
+      );
+      const { data: raw } = await writeStructured({
+        instructions: buildInstructions(ctx.kit),
+        prompt,
+        schema: contentSchema,
+        model,
+      });
+      fields = cleanFields(raw);
+    }
     const check = runBrandCheck(fields, ctx.channel, kitForCheck(ctx.kit));
     const noteLabel = data.adjustment
       ? (ADJUST_NOTE[data.adjustment] ?? "Adjusted")
@@ -309,7 +316,7 @@ export const reviseItem = createServerFn({ method: "POST" })
         ai_review: null,
         status: "draft",
         writer_model: model,
-        change_note: `${noteLabel} · ${getWriterModel(model).name}`,
+        change_note: dashFix ? "Removed dashes" : `${noteLabel} · ${getWriterModel(model).name}`,
       })
       .eq("id", data.itemId)
       .select(SELECT_ITEM)

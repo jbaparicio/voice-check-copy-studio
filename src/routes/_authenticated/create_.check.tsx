@@ -138,22 +138,23 @@ function CheckPostPage() {
         <div
           role="radiogroup"
           aria-label="How many posts"
-          className="inline-flex rounded-md border border-border bg-muted/40 p-1 text-sm"
+          className="inline-flex max-w-full rounded-md border border-border bg-muted p-1 text-sm"
         >
           {[
             { v: false, label: "One post" },
             { v: true, label: "Check several at once" },
           ].map((o) => (
-            <button
+            <Button
               key={o.label}
               type="button"
               role="radio"
               aria-checked={bulk === o.v}
               onClick={() => setBulk(o.v)}
-              className={`rounded px-3 py-1.5 transition-colors ${bulk === o.v ? "bg-background font-medium text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+              variant="ghost"
+              className={`h-auto whitespace-normal rounded px-3 py-1.5 transition-colors ${bulk === o.v ? "bg-card font-semibold text-primary shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
             >
               {o.label}
-            </button>
+            </Button>
           ))}
         </div>
         <div className="space-y-2">
@@ -166,6 +167,7 @@ function CheckPostPage() {
           )}
           <Textarea
             id="pasted-post"
+            className="border-input bg-card p-4 text-base leading-relaxed shadow-card"
             rows={14}
             value={text}
             onChange={(e) => setText(e.target.value)}
@@ -233,7 +235,7 @@ function CheckPostPage() {
           </div>
         </div>
 
-        <Button type="submit" disabled={busy}>
+        <Button type="submit" size="lg" className="h-auto min-h-11 w-full whitespace-normal py-3 font-semibold sm:w-auto" disabled={busy}>
           <ShieldCheck className="size-4" aria-hidden="true" />
           {busy
             ? (progress ?? "Checking… this takes a few seconds")

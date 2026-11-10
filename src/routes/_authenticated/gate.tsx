@@ -56,10 +56,10 @@ function firstLine(f: ContentFields): string {
 }
 
 const VERDICT_STYLE: Record<string, string> = {
-  Approve: "bg-primary/10 text-primary border-primary/30",
-  "Approve with edits": "bg-accent text-accent-foreground border-border",
-  "Send back": "bg-muted text-foreground border-border",
-  Kill: "bg-destructive/10 text-destructive border-destructive/40",
+  Approve: "bg-success-soft text-success border-success/40",
+  "Approve with edits": "bg-warning-soft text-warning border-warning/40",
+  "Send back": "bg-warning-soft text-warning border-warning/40",
+  Kill: "bg-destructive-soft text-destructive border-destructive/40",
 };
 
 type Pending = { row: GateRow; action: Extract<WorkflowAction, "request_changes" | "kill"> };
@@ -121,7 +121,7 @@ function GatePage() {
   const rows = gate.data ?? [];
 
   return (
-    <div className="mx-auto w-full max-w-[1000px] px-5 py-6 md:px-8">
+    <div className="mx-auto w-full max-w-[1200px] px-5 py-6 md:px-8">
       <PageHeader
         title="The gate"
         description={`Posts waiting for approval${brand ? ` for ${brand.name}` : ""}, newest first. Acting on a post takes it off the gate.`}
@@ -145,34 +145,34 @@ function GatePage() {
             Posts sent for review show up here. Check several at once from the Check a post page.
           </EmptyState>
         ) : (
-          <ul className="divide-y divide-border rounded-lg border border-border">
+          <ul className="space-y-3">
             {rows.map((row) => (
-              <li key={row.id} className="flex flex-col gap-3 p-4 md:flex-row md:items-center">
+              <li key={row.id} className="grid gap-4 rounded-lg border border-border bg-card p-5 shadow-card xl:grid-cols-[minmax(0,1fr)_auto] xl:items-center">
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
                     <Badge variant="outline">{getChannel(row.channel).short}</Badge>
                     <span>{formatDate(row.created_at, true)}</span>
                   </div>
-                  <p className="mt-1.5 truncate font-medium">{firstLine(row.fields)}</p>
+                  <p className="mt-2 break-words text-base font-semibold leading-relaxed">{firstLine(row.fields)}</p>
                   {row.mainProblem && row.verdict !== "Approve" && (
-                    <p className="mt-0.5 truncate text-xs text-muted-foreground">{row.mainProblem}</p>
+                    <p className="mt-1 break-words text-sm leading-relaxed text-foreground">{row.mainProblem}</p>
                   )}
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-3 xl:col-start-1 xl:row-start-2">
                   <span
-                    className={`rounded-full border px-2.5 py-0.5 text-xs font-medium ${VERDICT_STYLE[row.verdict ?? ""] ?? "border-border text-muted-foreground"}`}
+                    className={`rounded-md border px-3 py-1 text-sm font-semibold ${VERDICT_STYLE[row.verdict ?? ""] ?? "border-border text-muted-foreground"}`}
                   >
                     {row.verdict ?? "Not reviewed"}
                   </span>
-                  <span className="w-14 text-right text-sm tabular-nums">
+                  <span className="text-base font-semibold tabular-nums">
                     {row.brand_score ?? "–"}
                     <span className="text-muted-foreground">/100</span>
                   </span>
                 </div>
-                <div className="flex flex-wrap items-center gap-1.5">
+                <div className="flex flex-wrap items-center gap-2 xl:col-start-2 xl:row-span-2 xl:row-start-1">
                   {canApprove && (
                     <>
-                      <Button size="sm" disabled={busyId === row.id} onClick={() => act(row, "approve")}>
+                      <Button size="default" disabled={busyId === row.id} onClick={() => act(row, "approve")}>
                         <Check className="size-4" aria-hidden="true" /> Approve
                       </Button>
                       <Button
@@ -185,7 +185,7 @@ function GatePage() {
                       </Button>
                       <Button
                         size="sm"
-                        variant="destructive"
+                        variant="destructive-quiet"
                         disabled={busyId === row.id}
                         onClick={() => setPending({ row, action: "kill" })}
                       >

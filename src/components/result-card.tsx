@@ -484,7 +484,7 @@ export function ResultCard({
 
   return (
     <article
-      className={cn("relative rounded-2xl border bg-card", isVariant ? "p-4" : "p-5 md:p-6")}
+      className={cn("relative rounded-lg border bg-card shadow-card", isVariant ? "p-4" : "p-5 md:p-6")}
       aria-labelledby={`card-${item.id}`}
     >
       {busy && (
@@ -666,7 +666,7 @@ export function ResultCard({
           <HookPreview body={fields.body} length={ch.hookLength} />
         )}
 
-        <section aria-label="Change the whole draft" className="space-y-3 rounded-xl border bg-background p-4">
+        <section aria-label="Change the whole draft" className="space-y-3 rounded-lg border border-input bg-muted p-4">
           <h4 className="flex items-center gap-1.5 font-sans text-sm font-semibold">
             Change the whole draft
             <HelpTip>
@@ -688,7 +688,7 @@ export function ResultCard({
             ))}
           </div>
           {!isVariant && (
-            <div className="rounded-xl border bg-background">
+            <div className="rounded-lg border border-input bg-card">
               <button
                 type="button"
                 aria-expanded={noteOpen}
@@ -870,8 +870,8 @@ export function ResultCard({
         )}
 
         {/* Brand check */}
-        <section aria-label="Brand check" className="rounded-xl border bg-background p-4">
-          <h4 className="mb-1 flex items-center gap-1.5 font-sans text-sm font-semibold">
+        <section aria-label="Brand check" className="rounded-lg border-2 border-primary/40 bg-primary-soft p-4 md:p-5">
+          <h4 className="mb-3 flex items-center gap-1.5 font-sans text-xl font-semibold">
             Brand check
             <HelpTip>
               A careful second read against your Brand Kit: tone, facts and numbers, names that need
@@ -910,7 +910,7 @@ export function ResultCard({
                 </Button>
               </div>
             ) : aiReview ? (
-              <p className="mb-3 text-sm text-muted-foreground">{aiReview.summary}</p>
+              <p className="mb-4 border-b border-primary/20 pb-4 text-base leading-relaxed text-foreground">{aiReview.summary}</p>
             ) : null}
           </div>
 
@@ -925,7 +925,7 @@ export function ResultCard({
                     {c.label}
                     {c.badge && <FlagBadge badge={c.badge} />}
                   </p>
-                  <p className="text-muted-foreground">{c.message}</p>
+                  <p className="leading-relaxed text-foreground">{c.message}</p>
                   {c.span && (
                     <p className="text-xs">
                       <span className="text-muted-foreground">Flagged words: </span>
@@ -960,7 +960,7 @@ export function ResultCard({
                     {c.id === "placeholders" && <FlagBadge badge="needs_confirmation" />}
                     {c.id === "clearance" && <FlagBadge badge="needs_clearance" />}
                   </p>
-                  <p className="text-muted-foreground">{c.message}</p>
+                  <p className="leading-relaxed text-foreground">{c.message}</p>
                 </div>
                 {c.fix && (
                   <Button
@@ -981,7 +981,7 @@ export function ResultCard({
                 </span>
                 <p>
                   <span className="font-medium">{c.label}</span>{" "}
-                  <span className="text-muted-foreground">— {c.message}</span>
+                  <span className="text-foreground">— {c.message}</span>
                 </p>
               </li>
             ))}
@@ -1004,7 +1004,7 @@ export function ResultCard({
         {/* Actions */}
         <div className="space-y-3 border-t pt-4">
           <div className="flex flex-wrap gap-2">
-            <Button size="sm" onClick={copy}>
+            <Button size="sm" variant={showWorkflow ? "default" : "outline"} onClick={copy}>
               <Copy className="size-3.5" /> Copy text
             </Button>
             {showWorkflow && (item.status === "draft" || item.status === "changes_requested") && (

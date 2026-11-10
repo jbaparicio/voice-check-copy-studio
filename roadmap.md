@@ -1,5 +1,8 @@
 # Roadmap
 
+## Current
+- [x] Design-only contrast and review hierarchy polish; verified all four screens on desktop/mobile, saved copy/review values unchanged, and 75 relevant tests passing
+
 ## Done (v1)
 - [x] Onboarding wizard, Brand Kit (8 tabs), Create flow, sliders & presets, result cards
 - [x] Data model with workspace security, sample brand "Northlight Studio"

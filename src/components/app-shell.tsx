@@ -10,6 +10,7 @@ import {
   PanelLeftOpen,
   PenLine,
   Send,
+  ShieldCheck,
   Sparkles,
   Library,
   Users,
@@ -38,6 +39,12 @@ const NAV = [
     label: "Create content",
     icon: PenLine,
     help: "Write new posts, emails and articles",
+  },
+  {
+    to: "/create/check",
+    label: "Check a post",
+    icon: ShieldCheck,
+    help: "Paste a post someone wrote and check it against the Brand Kit",
   },
   {
     to: "/brand-kit",
@@ -171,7 +178,7 @@ function NavLinks({
   return (
     <nav aria-label="Main" className="flex flex-col gap-2">
       {NAV.map((item) => {
-        const active = path.startsWith(item.to);
+        const active = path === item.to || path.startsWith(`${item.to}/`);
         const Icon = item.icon;
         return (
           <Tooltip key={item.to}>

@@ -63,6 +63,16 @@ export function emptyFields(): ContentFields {
 }
 
 /** The text that counts towards the channel's character range. */
+/**
+ * Keep a pasted post exactly as written. Only a final paragraph made purely of "#tag #tag" is moved
+ * into hashtags, because the app adds it back in exactly that form when copying or posting.
+ */
+export function splitPastedPost(text: string): Pick<ContentFields, "body" | "hashtags"> {
+  const m = text.match(/^([\s\S]*?)\n\n(#[\p{L}\p{N}_]+(?: #[\p{L}\p{N}_]+)*)\s*$/u);
+  if (!m || !m[1]!.trim()) return { body: text, hashtags: [] };
+  return { body: m[1]!, hashtags: m[2]!.split(" ").map((t) => t.slice(1)) };
+}
+
 export function countedText(fields: ContentFields): string {
   const tags = fields.hashtags.length
     ? "\n\n" + fields.hashtags.map((h) => `#${h.replace(/^#/, "")}`).join(" ")

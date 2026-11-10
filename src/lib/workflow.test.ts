@@ -48,3 +48,17 @@ describe("deleting drafts", () => {
     expect(canDeleteDraft("approved")).toBe(false);
   });
 });
+
+describe("kill verdict", () => {
+  it("approvers can kill any live piece", () => {
+    expect(availableActions("in_review", true)).toContain("kill");
+    expect(availableActions("approved", true)).toContain("kill");
+  });
+  it("non-approvers cannot kill", () => {
+    expect(availableActions("in_review", false)).not.toContain("kill");
+  });
+  it("killed is terminal and never publishable", () => {
+    expect(availableActions("killed", true)).toEqual([]);
+    expect(canPublish("killed")).toBe(false);
+  });
+});

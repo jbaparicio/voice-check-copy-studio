@@ -18,9 +18,38 @@ When does your live team first see the campaign brief?`;
 // Only fields used by review; no database, account or brand data is changed.
 const kit = { brand: { name: "Battle Royal Studios (BRS)", voice_adjectives: [], sound_like: [], spelling_variant: "en-GB", emoji_policy: "none", exclamation_channels: { linkedin: false } }, rules: [], facts: [], names: [], personas: [], goals: [], examples: [] } as unknown as BrandKit;
 const input = { brief: "Existing post", keyFacts: [], link: null, personaId: null, goalId: null, exampleIds: [], sliders: normaliseSliders(null), hashtags: {} };
+const FESTIVAL_POST = `Big room. Bright lights. One night nobody forgets.
+
+Three days of load-in for a single evening at the festival, and every minute of it showed on the night.
+
+Comment and we'll send you the full project.
+
+#EventProduction #FestivalDesign
+
+Client: Nordhaven Festival`;
 beforeEach(() => write.mockResolvedValue({ data: { score: 0, summary: "", checks: [] } }));
 
 describe("BRS review integration and guardrails", () => {
+  it.each([
+    [FESTIVAL_POST, "Big room. Bright lights. One night nobody forgets.", "three-day load-in"],
+    ["Great coffee. Three logos. One confused customer.\n\nThe competing logos made the customer's choice harder.", "Great coffee. Three logos. One confused customer.", "competing logos"],
+  ])("sends back a model-identified stacked hook as the main problem: %s", async (body, span, substance) => {
+    const message = `Replace "${span}" with one full sentence that leads on the ${substance}.`;
+    write.mockResolvedValue({ data: { score: 100, summary: "", checks: [{ category: "rules", status: "fail", label: "Stacked opening fragments", explanation: message, span, badge: null, suggested_fix: "The load-in shaped the festival evening.", impact: "send_back" }] } });
+    const review = await runAiReview({ kit, channel: "linkedin", input, fields: { ...emptyFields(), ...splitPastedPost(body) } });
+    expect(review.verdict).toBe("Send back");
+    expect(review.score).toBe(80);
+    expect(review.main_problem).toBe(message);
+    expect(review.checks[0]).toMatchObject({ span, impact: "send_back", badge: null });
+  });
+  it.each([
+    "Guests notice.",
+    "Guests notice. Good launches start early.",
+    "Guests notice. Good launches start early. The live team shapes the idea.",
+  ])("preserves a clean semantic review of complete punchy sentences: %s", async (body) => {
+    const review = await runAiReview({ kit, channel: "linkedin", input, fields: { ...emptyFields(), body } });
+    expect(review).toMatchObject({ verdict: "Approve", score: 100, checks: [] });
+  });
   it("keeps the exact opinion post at Approve / 100 with no confirmation flags", async () => {
     const review = await runAiReview({ kit, channel: "linkedin", input, fields: { ...emptyFields(), ...splitPastedPost(POST) } });
     expect(review.verdict).toBe("Approve");

@@ -25,4 +25,4 @@
 - [x] Version history on the Review page (go back to any earlier version) + "rewrite with my note" after editing
 - [x] Highlight words in a draft and ask for a change to only that part
 - [x] Add Battle Royal Studios brand kit (data only) to the owner's team
-- [ ] New sign-ups on this copy don't get a team automatically (the signup step wasn't copied) — waiting on user's go-ahead to restore it
+- [x] Restored automatic team setup for new sign-ups

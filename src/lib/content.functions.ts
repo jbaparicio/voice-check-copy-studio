@@ -575,7 +575,8 @@ export const checkExistingPost = createServerFn({ method: "POST" })
       .insert({
         brand_id: data.brandId,
         created_by: userId,
-        brief: "Existing post, checked exactly as written (not written by the app).",
+        brief:
+          "Existing post written by a copywriter, checked exactly as written. There is no separate brief, image description or required structure to follow.",
         persona_id: data.personaId,
         goal_id: data.goalId,
         channels: [data.channel],

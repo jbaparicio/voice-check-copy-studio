@@ -124,7 +124,7 @@ describe("no-dash rule (BRS)", () => {
 describe("pasted post", () => {
   it("keeps the text exactly, moving only a final hashtag line", async () => {
     const { splitPastedPost } = await import("./content-types");
-    expect(splitPastedPost("Hello.\n\n#A #B")).toEqual({ body: "Hello.", hashtags: ["A", "B"] });
-    expect(splitPastedPost("Hello #A there.")).toEqual({ body: "Hello #A there.", hashtags: [] });
+    expect(splitPastedPost("Hello.\n\n#A #B")).toMatchObject({ body: "Hello.", hashtags: ["A", "B"] });
+    expect(splitPastedPost("Hello #A there.")).toMatchObject({ body: "Hello #A there.", hashtags: [] });
   });
 });

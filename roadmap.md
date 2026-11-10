@@ -1,5 +1,8 @@
 # Roadmap
 
+## Current
+- [ ] Design-only contrast and review hierarchy polish; verify review, Gate, Check a post and Brand Kit screenshots without changing saved data
+
 ## Done (v1)
 - [x] Onboarding wizard, Brand Kit (8 tabs), Create flow, sliders & presets, result cards
 - [x] Data model with workspace security, sample brand "Northlight Studio"

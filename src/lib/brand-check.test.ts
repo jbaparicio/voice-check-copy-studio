@@ -116,7 +116,7 @@ describe("no-dash rule (BRS)", () => {
   it("fix swaps only the punctuation", () => {
     expect(removeDashes("We build — you feel.")).toBe("We build, you feel.");
     expect(removeDashes("We build – That is it.")).toBe("We build. That is it.");
-    expect(removeDashes("Berlin - London")).toBe("Berlin, London");
+    expect(removeDashes("Fast - and felt")).toBe("Fast, and felt");
     expect(removeDashes("An award-winning co-creation.")).toBe("An award-winning co-creation.");
   });
 });

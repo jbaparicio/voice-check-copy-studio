@@ -11,6 +11,7 @@ import {
   PenLine,
   Send,
   ShieldCheck,
+  DoorOpen,
   Sparkles,
   Library,
   Users,
@@ -45,6 +46,12 @@ const NAV = [
     label: "Check a post",
     icon: ShieldCheck,
     help: "Paste a post someone wrote and check it against the Brand Kit",
+  },
+  {
+    to: "/gate",
+    label: "Gate",
+    icon: DoorOpen,
+    help: "Posts waiting for approval: approve, send back or kill",
   },
   {
     to: "/brand-kit",

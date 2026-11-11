@@ -1,3 +1,4 @@
+import { slideRange } from "./carousel-count";
 // Server-only: builds the writing brief from the Brand Kit.
 import { z } from "zod/v4";
 import { getChannel, type ChannelId } from "./channels";
@@ -22,10 +23,16 @@ export const contentSchema = z.object({
   faq: z.array(z.object({ question: z.string(), answer: z.string() })).nullable(),
 });
 
+function slideRequest(count: number | null | undefined): string {
+  const [a, b] = slideRange(count);
+  return a === b ? `EXACTLY ${a} (slide 1 the cover, slide ${a} the call to action, the ${a - 2} in between one point each)` : `${a} to ${b}`;
+}
+
 export const hashtagSchema = z.object({ hashtags: z.array(z.string()) });
 
 /** Existing channels retain their schema; carousel structure is enforced on every full writing call. */
-export function schemaForChannel(channel: ChannelId, kit?: BrandKit) {
+export function schemaForChannel(channel: ChannelId, kit?: BrandKit, slideCount?: number | null) {
+  const [minSlides, maxSlides] = slideRange(slideCount);
   if (channel === "case_study" && kit && kitForCheck(kit).noDashes) return contentSchema.extend({
     portfolio_format: z.literal("brs"),
     carousel_slides: z.null(),
@@ -36,7 +43,7 @@ export function schemaForChannel(channel: ChannelId, kit?: BrandKit) {
     faq: z.null(),
   });
   return channel === "instagram_carousel" ? contentSchema.extend({
-    carousel_slides: z.array(z.object({ headline: z.string().min(1).max(80), supporting_line: z.string().max(140).nullable() })).min(4).max(7),
+    carousel_slides: z.array(z.object({ headline: z.string().min(1).max(80), supporting_line: z.string().max(140).nullable() })).min(minSlides).max(maxSlides),
     hashtags: z.array(z.string()).min(3).max(8),
     alt_text: z.string().min(1),
   }) : contentSchema;
@@ -70,6 +77,8 @@ export interface GenerationInput {
   exampleIds: string[];
   sliders: SliderValues;
   hashtags: Partial<Record<ChannelId, number>>;
+  /** Instagram carousel only: exact slide count (3 to 10), or null/absent for Auto. */
+  slideCount?: number | null | undefined;
 }
 
 function list(items: string[], empty = "None set."): string {
@@ -189,7 +198,7 @@ export function buildChannelPrompt(
   const extras: string[] = [];
   const brsPortfolio = channelId === "case_study" && Boolean(kitForCheck(kit).noDashes);
   if (brsPortfolio) extras.push(BRS_PORTFOLIO);
-  if (channelId === "instagram_carousel") extras.push('Fill "carousel_slides" with 4 to 7 objects in reading order: "headline" (max 80 characters, cover roughly 8 words or fewer), "supporting_line" (one short line, max 140 characters; null is allowed on the cover). Final slide is a clear call to action. "body" is ONLY the separate caption, ending on an opinion or a real question, not a slogan or engagement command. "hook" mirrors the caption opening; "cta" mirrors the final slide call to action and does NOT have to appear in the caption. "alt_text" suggests a cover image description, not a claim that an image already exists. These carousel-specific instructions override the general output conventions. Do not use the stacked-fragment style in the caption; concise slide headlines are legitimate layout labels, not stacked prose.');
+  if (channelId === "instagram_carousel") extras.push(`Fill "carousel_slides" with ${slideRequest(input.slideCount)} objects in reading order: "headline" (max 80 characters, cover roughly 8 words or fewer), "supporting_line" (one short line, max 140 characters; null is allowed on the cover). Final slide is a clear call to action. "body" is ONLY the separate caption, ending on an opinion or a real question, not a slogan or engagement command. "hook" mirrors the caption opening; "cta" mirrors the final slide call to action and does NOT have to appear in the caption. "alt_text" suggests a cover image description, not a claim that an image already exists. These carousel-specific instructions override the general output conventions. Do not use the stacked-fragment style in the caption; concise slide headlines are legitimate layout labels, not stacked prose.`);
   if (channel.kind === "social" && channelId !== "x")
     extras.push(
       'Fill "alt_text" with a description of a suitable image for people using screen readers.',

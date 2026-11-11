@@ -93,7 +93,7 @@ export function runBrandCheck(
   const checks: BrandCheckItem[] = [];
   if (channel.id === "instagram_carousel") {
     const slides = fields.carousel_slides ?? [];
-    const valid = slides.length >= 4 && slides.length <= 7 && slides.every((s) => s.headline.trim() && s.headline.length <= 80 && (s.supporting_line?.length ?? 0) <= 140);
+    const valid = slides.length >= SLIDE_MIN && slides.length <= SLIDE_MAX && slides.every((s) => s.headline.trim() && s.headline.length <= 80 && (s.supporting_line?.length ?? 0) <= 140);
     checks.push({ id: "carousel", label: "Phone-readable carousel slides", status: valid ? "pass" : "fail", message: valid ? `${slides.length} ordered slides with short on-slide text.` : "Use 4 to 7 slides, each with a headline up to 80 characters and one supporting line up to 140 characters.", fix: valid ? undefined : "Keep the same substance but use 4 to 7 slides, each with a short headline (up to 80 characters) and one short supporting line (up to 140 characters). The first is a cover hook and the final is a clear call to action. Keep the caption unchanged." });
   }
 

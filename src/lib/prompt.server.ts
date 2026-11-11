@@ -160,7 +160,7 @@ HONESTY RULES (most important)
 - Never use a superlative ("first", "biggest", "#1", "leading", "best") unless an approved fact supports it.
 
 OUTPUT FORMAT
-- Plain text only. No markdown symbols (#, *, _, **). Use line breaks for structure.
+- Plain text only. No markdown symbols (#, *, _, **). Use line breaks for structure.${kitForCheck(kit).noDashes ? ' Exception: BRS Website case studies use the project-page Markdown headings, bold text and lists specified in their channel brief; preserve that formatting.' : ""}
 - "body" is the full post/copy as it should be published, WITHOUT the hashtags.
 - "hook" is the opening line(s) of the body exactly as written at the start of the body.
 - "hashtags" are written without the # symbol. Make them specific and relevant to the content — never generic filler like "marketing", "business", "success", "motivation".

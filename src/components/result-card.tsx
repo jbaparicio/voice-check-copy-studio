@@ -1,4 +1,5 @@
 import { plainCopy } from "@/lib/publish";
+import { CarouselSlides } from "@/components/carousel-slides";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { Link } from "@tanstack/react-router";
@@ -524,6 +525,9 @@ export function ResultCard({
       </header>
 
       <div className="mt-5 space-y-5">
+        {item.channel === "instagram_carousel" && (
+          <CarouselSlides slides={fields.carousel_slides ?? []} id={item.id} onChange={(carousel_slides) => edit({ carousel_slides })} onSave={() => { if (dirty) void save(); }} />
+        )}
 
         {fields.subject_line !== null && (
           <Field label="Subject line" id={`subj-${item.id}`}>
@@ -576,7 +580,7 @@ export function ResultCard({
         )}
 
         <Field
-          label={item.channel === "tiktok" ? "Caption" : ch.kind === "long" ? "Article" : "Copy"}
+          label={item.channel === "tiktok" || item.channel === "instagram_carousel" ? "Caption" : ch.kind === "long" ? "Article" : "Copy"}
           id={`body-${item.id}`}
           hint="Edit anything — changes save when you click away. Highlight words to ask for a change to just that part."
         >
@@ -751,14 +755,14 @@ export function ResultCard({
           )}
         </section>
 
-        <Field label="Call to action" id={`cta-${item.id}`}>
+        {item.channel !== "instagram_carousel" && <Field label="Call to action" id={`cta-${item.id}`}>
           <Input
             id={`cta-${item.id}`}
             value={fields.cta}
             onChange={(e) => edit({ cta: e.target.value })}
             onBlur={() => dirty && save()}
           />
-        </Field>
+        </Field>}
 
         {ch.hashtagRange[1] > 0 && (
           <div>
@@ -807,7 +811,7 @@ export function ResultCard({
 
         {fields.alt_text !== null && ch.kind === "social" && (
           <Field
-            label="Suggested image alt text"
+            label={item.channel === "instagram_carousel" ? "Suggested cover image alt text" : "Suggested image alt text"}
             id={`alt-${item.id}`}
             hint="Describes the image for people using screen readers."
           >

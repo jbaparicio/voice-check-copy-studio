@@ -80,6 +80,7 @@ export function buildBRSReviewContext(kit: BrandKit, channel: ChannelId, input: 
   return `BRAND: ${kit.brand.name}\nVOICE: ${kit.brand.voice_adjectives.join(", ")}\n${soundLikePairs(kit.brand).map((p) => `Sound like: ${p.we}; not: ${p.never}`).join("\n")}
 SPELLING: ${kit.brand.spelling_variant}
 CHANNEL: ${getChannel(channel).label}
+${channel === "instagram_carousel" ? 'CAROUSEL FORMAT: Review all carousel_slides in order plus the separate body caption, hashtags and cover alt_text. Cover headlines and separate slide headings are layout labels, NOT stacked prose fragments; the no-stacked-fragments rule still applies to prose passages. Middle slides make one point each and the final slide has a real CTA. Judge the caption ending separately: an opinion or real question is correct; the final slide CTA need not be the caption closer. Instagram portfolio may explain craft, process and project details across slides. Check sourcing, NDA, buzzwords and voice on EVERY slide. Count public client mentions across actual slide text, caption and tags, not mirrored hook/CTA. Optional extras retain existing editorial scoring rules.' : ""}
 AUDIENCE: ${persona?.name ?? "General professional audience"}
 GOAL (context, not mandatory CTA or metric): ${goal?.description ?? "Not specified"}
 BRIEF (context only): ${input.brief}
@@ -117,6 +118,7 @@ export async function runAiReview(opts: {
       fields.cta,
       fields.alt_text,
       fields.meta_description,
+      ...(fields.carousel_slides ?? []).flatMap((s) => [s.headline, s.supporting_line]),
     ]
       .filter(Boolean)
       .join("\n"),
@@ -173,7 +175,7 @@ ${draftText}`;
   if (brs) {
     // A never-mention client cannot be downgraded to an editable name warning.
     const ndaNames = [...kitForCheck(kit).neverNames, "Halvard Motors"];
-    const ndaText = `${fields.body}\n${fields.hashtags.join(" ")}\n${fields.alt_text ?? ""}\n${fields.on_screen_text?.join("\n") ?? ""}`;
+    const ndaText = `${fields.body}\n${fields.hashtags.join(" ")}\n${fields.alt_text ?? ""}\n${fields.on_screen_text?.join("\n") ?? ""}\n${(fields.carousel_slides ?? []).flatMap((s) => [s.headline, s.supporting_line]).join("\n")}`;
     const nda = ndaNames.filter((name) => findPhrases(ndaText.replace(/[@#]/g, "").replace(/(?<=[a-z])(?=[A-Z])/g, " "), [name]).length || ndaText.replace(/[^\p{L}\p{N}]/gu, "").toLowerCase().includes(name.replace(/[^\p{L}\p{N}]/gu, "").toLowerCase()));
     if (nda.length && !checks.some((c) => c.impact === "kill")) checks.unshift({ id: "ai-nda", category: "names", label: "NDA work cannot run", status: "fail", message: `${nda.join(", ")} is NDA or unannounced work. Do not run this post.`, span: null, badge: "needs_clearance", suggestion: null, impact: "kill" });
     const decision = editorialDecision(checks, runBrandCheck(fields, channel, kitForCheck(kit)).checks);

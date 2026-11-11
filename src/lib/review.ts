@@ -149,6 +149,7 @@ export function applySpanFix(
     faq: fields.faq
       ? fields.faq.map((f) => ({ question: swap(f.question), answer: swap(f.answer) }))
       : null,
+    carousel_slides: fields.carousel_slides?.map((s) => ({ headline: swap(s.headline), supporting_line: opt(s.supporting_line) })) ?? null,
   };
   return { fields: next, changed };
 }

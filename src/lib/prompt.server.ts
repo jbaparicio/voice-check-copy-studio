@@ -7,6 +7,7 @@ import { capEmoji, slidersToInstructions, type EmojiPolicy, type SliderValues } 
 import { spellingLabel } from "./spelling";
 
 export const contentSchema = z.object({
+  carousel_slides: z.array(z.object({ headline: z.string(), supporting_line: z.string().nullable() })).nullable().optional(),
   hook: z.string(),
   body: z.string(),
   hashtags: z.array(z.string()),
@@ -22,6 +23,15 @@ export const contentSchema = z.object({
 });
 
 export const hashtagSchema = z.object({ hashtags: z.array(z.string()) });
+
+/** Existing channels retain their schema; carousel structure is enforced on every full writing call. */
+export function schemaForChannel(channel: ChannelId) {
+  return channel === "instagram_carousel" ? contentSchema.extend({
+    carousel_slides: z.array(z.object({ headline: z.string().min(1).max(80), supporting_line: z.string().max(140).nullable() })).min(4).max(7),
+    hashtags: z.array(z.string()).min(3).max(8),
+    alt_text: z.string().min(1),
+  }) : contentSchema;
+}
 
 export interface KeyFact {
   text: string;
@@ -150,9 +160,11 @@ export function buildChannelPrompt(
     emoji: capEmoji(input.sliders.emoji, kit.brand.emoji_policy as EmojiPolicy),
   };
   const exclamationOk = exclamationMap(kit.brand)[channelId] ?? true;
-  const hashtagCount = input.hashtags[channelId] ?? channel.hashtagDefault;
+  const requestedHashtags = input.hashtags[channelId] ?? channel.hashtagDefault;
+  const hashtagCount = channelId === "instagram_carousel" ? Math.max(3, Math.min(8, requestedHashtags)) : requestedHashtags;
 
   const extras: string[] = [];
+  if (channelId === "instagram_carousel") extras.push('Fill "carousel_slides" with 4 to 7 objects in reading order: "headline" (max 80 characters, cover roughly 8 words or fewer), "supporting_line" (one short line, max 140 characters; null is allowed on the cover). Final slide is a clear call to action. "body" is ONLY the separate caption, ending on an opinion or a real question, not a slogan or engagement command. "hook" mirrors the caption opening; "cta" mirrors the final slide call to action and does NOT have to appear in the caption. "alt_text" suggests a cover image description, not a claim that an image already exists. These carousel-specific instructions override the general output conventions. Do not use the stacked-fragment style in the caption; concise slide headlines are legitimate layout labels, not stacked prose.');
   if (channel.kind === "social" && channelId !== "x")
     extras.push(
       'Fill "alt_text" with a description of a suitable image for people using screen readers.',

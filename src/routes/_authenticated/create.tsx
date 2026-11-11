@@ -627,7 +627,7 @@ function CreatePage() {
                 <div className="flex items-center gap-2">
                   <Button type="button" size="sm" variant={slideCount === null ? "default" : "outline"} onClick={() => setSlideCount(null)} aria-pressed={slideCount === null}>Auto</Button>
                   <Button type="button" size="icon" variant="outline" className="size-8" aria-label="Fewer slides" disabled={slideCount === SLIDE_MIN} onClick={() => setSlideCount((n) => Math.max(SLIDE_MIN, (n ?? 5) - 1))}>−</Button>
-                  <span className="w-12 text-center text-sm font-medium tabular-nums" aria-live="polite">{slideCount ?? "4–7"}</span>
+                  <span className="w-14 text-center text-sm font-medium tabular-nums" aria-live="polite">{slideCount ?? "4 to 7"}</span>
                   <Button type="button" size="icon" variant="outline" className="size-8" aria-label="More slides" disabled={slideCount === SLIDE_MAX} onClick={() => setSlideCount((n) => Math.min(SLIDE_MAX, (n ?? 5) + 1))}>+</Button>
                 </div>
               </div>

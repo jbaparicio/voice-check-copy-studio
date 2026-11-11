@@ -1,6 +1,8 @@
 import { plainCopy } from "@/lib/publish";
 import { CarouselSlides } from "@/components/carousel-slides";
 import { PortfolioPreview } from "@/components/portfolio-preview";
+import { HighlightedText } from "@/components/highlighted-text";
+import type { FlagSpan } from "@/lib/highlight";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { Link } from "@tanstack/react-router";
@@ -262,12 +264,14 @@ export function ResultCard({
 
   // The copy box grows with the text, so the whole draft is always readable without scrolling inside it.
   const bodyRef = useRef<HTMLTextAreaElement>(null);
+  const articleRef = useRef<HTMLElement>(null);
+  const [editingText, setEditingText] = useState(false);
   useLayoutEffect(() => {
     const el = bodyRef.current;
     if (!el) return;
     el.style.height = "auto";
     el.style.height = `${el.scrollHeight + 2}px`;
-  }, [fields.body]);
+  }, [fields.body, editingText]);
 
   useEffect(() => {
     setFields(item.fields);
@@ -481,11 +485,28 @@ export function ResultCard({
     toast.success("Copied as plain text.");
   }
 
+  const flagSpans: FlagSpan[] = aiFlagged.flatMap((c) => (c.span ? [{ id: c.id, span: c.span }] : []));
+  const showMarks = flagSpans.length > 0 && !editingText;
+  function startEditing() {
+    setEditingText(true);
+    requestAnimationFrame(() => bodyRef.current?.focus());
+  }
+  function jumpToFlag(id: string) {
+    setEditingText(false);
+    requestAnimationFrame(() => {
+      const el = articleRef.current?.querySelector<HTMLElement>(`[data-flag-id="${CSS.escape(id)}"]`);
+      if (!el) return void toast.message("Those exact words aren't in the text any more.");
+      el.scrollIntoView({ behavior: "smooth", block: "center" });
+      el.classList.add("ring-2", "ring-primary", "ring-offset-2");
+      setTimeout(() => el.classList.remove("ring-2", "ring-primary", "ring-offset-2"), 1800);
+    });
+  }
   const flagged = check.checks.filter((c) => c.status !== "pass");
   const passed = check.checks.filter((c) => c.status === "pass");
 
   return (
     <article
+      ref={articleRef}
       className={cn("relative rounded-lg border bg-card shadow-card", isVariant ? "p-4" : "p-5 md:p-6")}
       aria-labelledby={`card-${item.id}`}
     >
@@ -527,7 +548,7 @@ export function ResultCard({
 
       <div className="mt-5 space-y-5">
         {item.channel === "instagram_carousel" && (
-          <CarouselSlides slides={fields.carousel_slides ?? []} id={item.id} onChange={(carousel_slides) => edit({ carousel_slides })} onSave={() => { if (dirty) void save(); }} />
+          <CarouselSlides slides={fields.carousel_slides ?? []} id={item.id} highlight={showMarks ? flagSpans : null} onEdit={startEditing} onChange={(carousel_slides) => edit({ carousel_slides })} onSave={() => { if (dirty) void save(); }} />
         )}
 
         {fields.subject_line !== null && (
@@ -580,13 +601,36 @@ export function ResultCard({
           </>
         )}
 
-        {item.channel === "case_study" && kit.noDashes && fields.portfolio_format === "brs" && <PortfolioPreview fields={fields} />}
+        {item.channel === "case_study" && kit.noDashes && fields.portfolio_format === "brs" && <PortfolioPreview fields={fields} spans={flagSpans} />}
+
+        {flagSpans.length > 0 && (
+          <div className="flex flex-wrap items-center gap-2 rounded-lg border border-input bg-muted px-3 py-2 text-sm">
+            <mark className="rounded-sm bg-highlight px-1 text-foreground">Yellow</mark>
+            <span className="flex-1">{showMarks ? "marks the words the brand check flagged." : "You're editing. Show the highlights again when you're done."}</span>
+            <Button type="button" size="sm" variant="outline" onClick={() => (showMarks ? startEditing() : setEditingText(false))}>
+              {showMarks ? "Edit text" : "Show highlights"}
+            </Button>
+          </div>
+        )}
 
         <Field
           label={item.channel === "tiktok" || item.channel === "instagram_carousel" ? "Caption" : ch.kind === "long" ? "Article" : "Copy"}
           id={`body-${item.id}`}
           hint="Edit anything — changes save when you click away. Highlight words to ask for a change to just that part."
         >
+          {showMarks ? (
+            <div
+              id={`body-${item.id}`}
+              role="button"
+              tabIndex={0}
+              aria-label="Copy with flagged words highlighted. Press to edit."
+              onClick={startEditing}
+              onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); startEditing(); } }}
+              className="min-h-24 cursor-text whitespace-pre-wrap break-words rounded-md border border-input bg-background px-3 py-2 text-sm leading-relaxed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              <HighlightedText text={fields.body} spans={flagSpans} />
+            </div>
+          ) : (
           <Textarea
             ref={bodyRef}
             id={`body-${item.id}`}
@@ -602,6 +646,7 @@ export function ResultCard({
             rows={ch.kind === "long" ? 16 : isVariant ? 8 : 10}
             className="resize-none overflow-hidden text-sm leading-relaxed selection:bg-highlight selection:text-foreground"
           />
+          )}
         </Field>
 
         {selection && (
@@ -936,7 +981,7 @@ export function ResultCard({
                   {c.span && (
                     <p className="text-xs">
                       <span className="text-muted-foreground">Flagged words: </span>
-                      <mark className="rounded bg-highlight px-1 text-foreground">{c.span}</mark>
+                      <button type="button" onClick={() => jumpToFlag(c.id)} title="Show these words in the text" className="rounded bg-highlight px-1 text-left text-foreground underline decoration-dotted underline-offset-2 hover:ring-1 hover:ring-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">{c.span}</button>
                     </p>
                   )}
                   {c.span && c.suggestion !== null && (

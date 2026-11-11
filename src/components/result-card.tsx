@@ -1,5 +1,6 @@
 import { plainCopy } from "@/lib/publish";
 import { CarouselSlides } from "@/components/carousel-slides";
+import { PortfolioPreview } from "@/components/portfolio-preview";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { Link } from "@tanstack/react-router";
@@ -578,6 +579,8 @@ export function ResultCard({
             </Field>
           </>
         )}
+
+        {item.channel === "case_study" && kit.noDashes && fields.portfolio_format === "brs" && <PortfolioPreview fields={fields} />}
 
         <Field
           label={item.channel === "tiktok" || item.channel === "instagram_carousel" ? "Caption" : ch.kind === "long" ? "Article" : "Copy"}

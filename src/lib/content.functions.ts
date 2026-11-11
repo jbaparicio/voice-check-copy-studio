@@ -57,7 +57,7 @@ function cleanFields(raw: Partial<ContentFields>): ContentFields {
   return {
     ...f,
     hook: toPlainText(f.hook ?? ""),
-    body: toPlainText(f.body ?? ""),
+    body: f.portfolio_format === "brs" ? (f.body ?? "").trim() : toPlainText(f.body ?? ""),
     cta: toPlainText(f.cta ?? ""),
     hashtags: Array.from(new Set(tags)),
     carousel_slides: f.carousel_slides?.map((s) => ({ headline: toPlainText(s.headline), supporting_line: s.supporting_line === null ? null : toPlainText(s.supporting_line) })) ?? null,
@@ -150,7 +150,7 @@ export const generateContent = createServerFn({ method: "POST" })
           const { data: raw } = await writeStructured({
             instructions,
             prompt: buildChannelPrompt(kit, channel, data),
-            schema: schemaForChannel(channel),
+            schema: schemaForChannel(channel, kit),
             model: data.model,
           });
           const fields = cleanFields(raw);
@@ -295,7 +295,7 @@ export const reviseItem = createServerFn({ method: "POST" })
       const { data: raw } = await writeStructured({
         instructions: buildInstructions(ctx.kit),
         prompt,
-        schema: schemaForChannel(ctx.channel),
+        schema: schemaForChannel(ctx.channel, ctx.kit),
         model,
       });
       fields = cleanFields(raw);
@@ -441,7 +441,7 @@ export const generateVariants = createServerFn({ method: "POST" })
         const { data: raw } = await writeStructured({
           instructions,
           prompt: buildRevisionPrompt(base, ctx.current, angle, false),
-          schema: schemaForChannel(ctx.channel),
+          schema: schemaForChannel(ctx.channel, ctx.kit),
           model,
         });
         const fields = cleanFields(raw);
@@ -670,7 +670,7 @@ Never add facts, numbers, clients, awards, quotes or people that aren't in the a
           instruction,
           true,
         ),
-        schema: schemaForChannel(ctx.channel),
+        schema: schemaForChannel(ctx.channel, ctx.kit),
       });
       fields = cleanFields(raw);
     }

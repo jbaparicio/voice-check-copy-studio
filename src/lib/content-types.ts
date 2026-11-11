@@ -7,6 +7,7 @@ export interface CarouselSlide {
 
 /** The fields every generated piece can have. Channel-specific extras are null when unused. */
 export interface ContentFields {
+  portfolio_format?: "brs" | null | undefined;
   carousel_slides?: CarouselSlide[] | null | undefined;
   hook: string;
   body: string;

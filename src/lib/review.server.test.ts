@@ -30,6 +30,20 @@ Client: Nordhaven Festival`;
 beforeEach(() => write.mockResolvedValue({ data: { score: 0, summary: "", checks: [] } }));
 
 describe("BRS review integration and guardrails", () => {
+  it("reviews carousel slide copy and catches NDA names in slides", async () => {
+    const fields = { ...emptyFields(), body: "Craft shapes how a room feels. What detail stayed with you?", carousel_slides: [
+      { headline: "The room starts with the crew", supporting_line: null },
+      { headline: "Build from the plan", supporting_line: "Sightlines shape the layout." },
+      { headline: "Make room for people", supporting_line: "The stage stays in view." },
+      { headline: "Tell us what you noticed", supporting_line: null },
+    ] };
+    const clean = await runAiReview({ kit, channel: "instagram_carousel", input, fields });
+    expect(clean).toMatchObject({ verdict: "Approve", score: 100, checks: [] });
+    expect(write.mock.calls[0]?.[0].prompt).toContain("Build from the plan");
+    fields.carousel_slides[1] = { headline: "Halvard Motors", supporting_line: null };
+    const nda = await runAiReview({ kit, channel: "instagram_carousel", input, fields });
+    expect(nda).toMatchObject({ verdict: "Kill", score: 0 });
+  });
   it.each([
     [FESTIVAL_POST, "Big room. Bright lights. One night nobody forgets.", "three-day load-in"],
     ["Great coffee. Three logos. One confused customer.\n\nThe competing logos made the customer's choice harder.", "Great coffee. Three logos. One confused customer.", "competing logos"],

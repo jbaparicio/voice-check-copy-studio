@@ -28,6 +28,7 @@ export const hashtagSchema = z.object({ hashtags: z.array(z.string()) });
 export function schemaForChannel(channel: ChannelId, kit?: BrandKit) {
   if (channel === "case_study" && kit && kitForCheck(kit).noDashes) return contentSchema.extend({
     portfolio_format: z.literal("brs"),
+    carousel_slides: z.null(),
     h1: z.string().min(1),
     h2s: z.array(z.string()).min(7),
     hook: z.string().min(1),

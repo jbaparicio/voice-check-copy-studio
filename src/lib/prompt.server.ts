@@ -8,7 +8,7 @@ import { capEmoji, slidersToInstructions, type EmojiPolicy, type SliderValues } 
 import { spellingLabel } from "./spelling";
 
 export const contentSchema = z.object({
-  carousel_slides: z.array(z.object({ headline: z.string(), supporting_line: z.string().nullable() })).nullable().optional(),
+  carousel_slides: z.array(z.object({ headline: z.string(), supporting_line: z.string().nullable() })).nullable(),
   hook: z.string(),
   body: z.string(),
   hashtags: z.array(z.string()),

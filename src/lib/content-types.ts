@@ -1,4 +1,5 @@
 import type { ChannelId } from "./channels";
+import { toPlainText } from "./plain-text";
 
 export interface CarouselSlide {
   headline: string;
@@ -96,7 +97,7 @@ export function countedText(fields: ContentFields): string {
   const tags = fields.hashtags.length
     ? "\n\n" + fields.hashtags.map((h) => `#${h.replace(/^#/, "")}`).join(" ")
     : "";
-  return `${fields.body}${tags}`;
+  return `${fields.portfolio_format === "brs" ? toPlainText(fields.body) : fields.body}${tags}`;
 }
 
 /** Every piece of text in the item, for checks. */
@@ -105,7 +106,7 @@ export function allText(fields: ContentFields): string {
     fields.subject_line,
     fields.h1,
     fields.hook,
-    fields.body,
+    fields.portfolio_format === "brs" ? toPlainText(fields.body) : fields.body,
     fields.cta,
     fields.first_2s_hook,
     ...(fields.on_screen_text ?? []),

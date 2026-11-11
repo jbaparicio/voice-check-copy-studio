@@ -2,12 +2,19 @@ import { describe, expect, it } from "vitest";
 import { BRS_PORTFOLIO, buildChannelPrompt, contentSchema, schemaForChannel } from "./prompt.server";
 import { buildBRSReviewContext } from "./review.server";
 import { emptyFields } from "./content-types";
+import { runBrandCheck } from "./brand-check";
+import { kitForCheck } from "./brand-kit";
 import type { BrandKit } from "./brand-kit";
 import { normaliseSliders } from "./sliders";
 
 const kit = { brand: { name: "Battle Royal Studios", sound_like: [], voice_adjectives: [], spelling_variant: "en-GB", emoji_policy: "none", exclamation_channels: {} }, rules: [], facts: [], names: [], personas: [], goals: [], examples: [] } as unknown as BrandKit;
 const input = { brief: "Sample project", keyFacts: [], link: null, personaId: null, goalId: null, exampleIds: [], sliders: normaliseSliders(null), hashtags: {} };
 describe("BRS-only portfolio format", () => {
+  it("treats Markdown checklist and nested list markers as layout, but flags prose dashes", () => {
+    const fields = { ...emptyFields(), portfolio_format: "brs" as const, body: "## What we delivered\n\n- [x] Design\n  - Integrated scope: spatial and technical." };
+    expect(runBrandCheck(fields, "case_study", kitForCheck(kit)).checks.find(c => c.id === "dashes")?.status).toBe("pass");
+    expect(runBrandCheck({ ...fields, body: fields.body + "\n\nDesign - with substance." }, "case_study", kitForCheck(kit)).checks.find(c => c.id === "dashes")?.status).toBe("fail");
+  });
   it("requires no FAQ for BRS but retains the generic schema for other brands", () => {
     const fields = { ...emptyFields(), portfolio_format: "brs", h1: "Spatial design with TikTok at OMR", hook: "A space for conversation. It welcomed 500 people.", h2s: ["Culture", "Build", "Scope", "People", "Results", "Reflection", "Credits"], meta_description: "Discover our Hamburg brand experience." };
     expect(schemaForChannel("case_study", kit).safeParse(fields).success).toBe(true);

@@ -1,7 +1,7 @@
 // Server-only: the AI brand check (second pass on every draft).
 import { z } from "zod/v4";
 import { getChannel, type ChannelId } from "./channels";
-import type { ContentFields } from "./content-types";
+import { allText, type ContentFields } from "./content-types";
 import { kitForCheck, soundLikePairs, type BrandKit } from "./brand-kit";
 import { findPhrases, runBrandCheck } from "./brand-check";
 import { writeStructured } from "./ai-gateway.server";
@@ -176,7 +176,7 @@ ${draftText}`;
   if (brs) {
     // A never-mention client cannot be downgraded to an editable name warning.
     const ndaNames = [...kitForCheck(kit).neverNames, "Halvard Motors"];
-    const ndaText = `${fields.body}\n${fields.hashtags.join(" ")}\n${fields.alt_text ?? ""}\n${fields.on_screen_text?.join("\n") ?? ""}\n${(fields.carousel_slides ?? []).flatMap((s) => [s.headline, s.supporting_line]).join("\n")}`;
+    const ndaText = `${channel === "case_study" ? allText(fields) : fields.body}\n${fields.hashtags.join(" ")}\n${fields.alt_text ?? ""}\n${fields.on_screen_text?.join("\n") ?? ""}\n${(fields.carousel_slides ?? []).flatMap((s) => [s.headline, s.supporting_line]).join("\n")}`;
     const nda = ndaNames.filter((name) => findPhrases(ndaText.replace(/[@#]/g, "").replace(/(?<=[a-z])(?=[A-Z])/g, " "), [name]).length || ndaText.replace(/[^\p{L}\p{N}]/gu, "").toLowerCase().includes(name.replace(/[^\p{L}\p{N}]/gu, "").toLowerCase()));
     if (nda.length && !checks.some((c) => c.impact === "kill")) checks.unshift({ id: "ai-nda", category: "names", label: "NDA work cannot run", status: "fail", message: `${nda.join(", ")} is NDA or unannounced work. Do not run this post.`, span: null, badge: "needs_clearance", suggestion: null, impact: "kill" });
     const decision = editorialDecision(checks, runBrandCheck(fields, channel, kitForCheck(kit)).checks);

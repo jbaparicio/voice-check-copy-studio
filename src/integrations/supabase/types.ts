@@ -788,6 +788,16 @@ export type Database = {
       can_access_brand: { Args: { _brand: string }; Returns: boolean }
       can_access_brand_text: { Args: { _brand: string }; Returns: boolean }
       can_approve_brand: { Args: { _brand: string }; Returns: boolean }
+      can_delete_brand: { Args: { _brand: string }; Returns: boolean }
+      delete_library_content: {
+        Args: {
+          _brand: string
+          _expected_count?: number
+          _item?: string
+          _request?: string
+        }
+        Returns: number
+      }
       demo_fields: {
         Args: {
           _alt: string

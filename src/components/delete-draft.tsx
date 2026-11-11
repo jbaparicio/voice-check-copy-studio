@@ -26,9 +26,9 @@ export function DeleteDraftButton({
   iconOnly = false,
   className,
 }: {
-  itemId?: string;
-  brandId?: string;
-  requestId?: string;
+  itemId?: string | undefined;
+  brandId?: string | undefined;
+  requestId?: string | undefined;
   pieceCount?: number;
   status?: string;
   onDeleted: () => void;
@@ -61,7 +61,8 @@ export function DeleteDraftButton({
     if (!permission.data) return;
     setBusy(true);
     const { error } = await supabase.rpc("delete_library_content", {
-      _brand: permission.data, _item: itemId, _request: requestId, _expected_count: pieceCount,
+      _brand: permission.data, ...(itemId ? { _item: itemId } : {}),
+      ...(requestId ? { _request: requestId } : {}), _expected_count: pieceCount,
     });
     setBusy(false);
     if (error) {

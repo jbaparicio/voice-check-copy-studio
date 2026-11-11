@@ -1,7 +1,7 @@
 // Server-only: the AI brand check (second pass on every draft).
 import { z } from "zod/v4";
 import { getChannel, type ChannelId } from "./channels";
-import type { ContentFields } from "./content-types";
+import { allText, type ContentFields } from "./content-types";
 import { kitForCheck, soundLikePairs, type BrandKit } from "./brand-kit";
 import { findPhrases, runBrandCheck } from "./brand-check";
 import { writeStructured } from "./ai-gateway.server";
@@ -80,6 +80,7 @@ export function buildBRSReviewContext(kit: BrandKit, channel: ChannelId, input: 
   return `BRAND: ${kit.brand.name}\nVOICE: ${kit.brand.voice_adjectives.join(", ")}\n${soundLikePairs(kit.brand).map((p) => `Sound like: ${p.we}; not: ${p.never}`).join("\n")}
 SPELLING: ${kit.brand.spelling_variant}
 CHANNEL: ${getChannel(channel).label}
+${channel === "case_study" ? 'BRS PROJECT PAGE: Apply the project-page editorial format, not social-post conventions. H1 is discipline with client at event/place. The opening deck is two bold sentences: hook and sourced numeric result. Body has statement-style H2 story beats: framing, build, bulleted scope, audience, engagement/results with bold sourced numbers, an editorial pull-quote heading, and a one-paragraph reflection; then What we delivered checklist and integrated-scope line, a bold closing sentence, grouped Credits (bold names plus roles; external companies plus functions), and a bold question with a short contact invitation. Metadata begins Discover our place/type experience. No FAQ is required or wanted. No generic Context / Challenge / Solution headings or stats panel. Missing substantive structure is send_back; small formatting corrections are edit. Inspect the body and separately stored H1, not mirrored hook/h2s/CTA. Markdown headings and separate short labels are legitimate layout, not stacked prose. Delivered project facts are not empty self-promotion. The question and contact invitation are the correct ending for this format: do not apply the social final-paragraph opinion rule to the invitation. Public client in H1 plus one credit line is permitted; avoid further repeated prose mentions. Credits must use only brief-supplied names/companies, not people borrowed from brand facts; missing credits use a clearly labelled confirmation placeholder. A pull-quote heading may be an unquoted editorial observation grounded in the story, never an invented attributed testimonial. Apply sourcing and NDA rules everywhere, including headings and credits. Do not demand extra metrics beyond supplied project facts.' : ""}
 ${channel === "instagram_carousel" ? 'CAROUSEL FORMAT: Review all carousel_slides in order plus the separate body caption, hashtags and cover alt_text. Cover headlines and separate slide headings are layout labels, NOT stacked prose fragments; the no-stacked-fragments rule still applies to prose passages. Middle slides make one point each and the final slide has a real CTA. Judge the caption ending separately: an opinion or real question is correct; the final slide CTA need not be the caption closer. Instagram portfolio may explain craft, process and project details across slides. Check sourcing, NDA, buzzwords and voice on EVERY slide. Count public client mentions across actual slide text, caption and tags, not mirrored hook/CTA. Optional extras retain existing editorial scoring rules.' : ""}
 AUDIENCE: ${persona?.name ?? "General professional audience"}
 GOAL (context, not mandatory CTA or metric): ${goal?.description ?? "Not specified"}
@@ -140,7 +141,7 @@ THE ${getChannel(channel).label.toUpperCase()} DRAFT TO REVIEW
 ${draftText}`;
 
   const { data } = await writeStructured({
-    instructions: brs ? BRS_REVIEWER : REVIEWER,
+    instructions: brs ? (channel === "case_study" ? BRS_REVIEWER.replace(/4\. End on an opinion[\s\S]*?(?=5\. Do not)/, '4. This Website project page MUST end on a bold real question followed by one short contact invitation. This is the correct project-page ending. Do not flag the contact invitation, demand a final opinion, or move it before the question. A grounded editorial closing sentence before Credits is also correct, not an unsupported slogan.\n').replace('5. Do not make posts about BRS. Its own projects may appear only when adding a fact. Self-promotion without substance is send_back.', '5. This portfolio explains delivered project work. Substantive project storytelling is correct, not self-promotion without substance.').replace('Public client names may appear ONCE with a credit line.', 'Public client names may appear in the H1 plus one client credit line for this Website project page. Avoid additional repetition in prose. Count no mirrored metadata fields.') : BRS_REVIEWER) : REVIEWER,
     prompt,
     schema: reviewSchema,
     effort: "medium",
@@ -175,7 +176,7 @@ ${draftText}`;
   if (brs) {
     // A never-mention client cannot be downgraded to an editable name warning.
     const ndaNames = [...kitForCheck(kit).neverNames, "Halvard Motors"];
-    const ndaText = `${fields.body}\n${fields.hashtags.join(" ")}\n${fields.alt_text ?? ""}\n${fields.on_screen_text?.join("\n") ?? ""}\n${(fields.carousel_slides ?? []).flatMap((s) => [s.headline, s.supporting_line]).join("\n")}`;
+    const ndaText = `${channel === "case_study" ? allText(fields) : fields.body}\n${fields.hashtags.join(" ")}\n${fields.alt_text ?? ""}\n${fields.on_screen_text?.join("\n") ?? ""}\n${(fields.carousel_slides ?? []).flatMap((s) => [s.headline, s.supporting_line]).join("\n")}`;
     const nda = ndaNames.filter((name) => findPhrases(ndaText.replace(/[@#]/g, "").replace(/(?<=[a-z])(?=[A-Z])/g, " "), [name]).length || ndaText.replace(/[^\p{L}\p{N}]/gu, "").toLowerCase().includes(name.replace(/[^\p{L}\p{N}]/gu, "").toLowerCase()));
     if (nda.length && !checks.some((c) => c.impact === "kill")) checks.unshift({ id: "ai-nda", category: "names", label: "NDA work cannot run", status: "fail", message: `${nda.join(", ")} is NDA or unannounced work. Do not run this post.`, span: null, badge: "needs_clearance", suggestion: null, impact: "kill" });
     const decision = editorialDecision(checks, runBrandCheck(fields, channel, kitForCheck(kit)).checks);

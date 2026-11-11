@@ -843,7 +843,7 @@ function CreatePage() {
                         <div
                           className={cn(drafts.length > 1 && "grid items-start gap-4 lg:grid-cols-2")}
                         >
-                          {drafts.map((r) => r.channel === "instagram_carousel" ? (
+                          {drafts.map((r) => r.channel === "instagram_carousel" || (r.channel === "case_study" && checkKit.noDashes && r.fields.portfolio_format === "brs") ? (
                             <div key={r.id} className="min-w-0 space-y-3">
                               <ResultCard item={r} kit={checkKit} onUpdate={(updated) => setItems((all) => all.map((x) => x.id === updated.id ? updated : x))} onVariants={(variants) => setItems((all) => [...all, ...variants])} />
                               <Button asChild variant="outline"><Link to="/library/$itemId" params={{ itemId: r.id }}>Open review <ArrowRight className="size-4" /></Link></Button>

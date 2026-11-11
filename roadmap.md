@@ -1,7 +1,7 @@
 # Roadmap
 
 ## Current
-- [ ] Add Instagram carousel channel, editable slides, full checks and authenticated generate-to-approve verification
+- [x] Add Instagram carousel channel with editable slides; live BRS generation, slide edit, recheck (Approve / 100), submission and approval verified; desktop/mobile screenshots and all 106 tests passed
 - [x] Add visible BRS no-stacked-fragments rule and reviewer enforcement; live festival post Send back with stacked opening first, complete short sentences Approve / 100, coffee stack Send back / 80; 64 tests passed
 - [x] Design-only contrast and review hierarchy polish; verified all four screens on desktop/mobile, saved copy/review values unchanged, and 75 relevant tests passing
 

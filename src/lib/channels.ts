@@ -69,7 +69,7 @@ export const CHANNELS: ChannelConfig[] = [
     hookLength: 125,
     hashtagDefault: 5,
     hashtagRange: [3, 8],
-    conventions: "Produce 4 to 7 ordered slides plus a separate caption. Slide 1 is a cover hook: a headline of roughly 8 words or fewer and an optional one-line sub. Each middle slide makes one point with a short headline and one short supporting line. The final slide is a clear call to action. Keep on-slide copy short enough to read on a phone. The caption ends on an opinion or a real question. Supply 3 to 8 specific hashtags and suggested alt text for the cover image.",
+    conventions: "Produce the requested number of ordered slides (4 to 7 unless a slide count is set) plus a separate caption. Slide 1 is a cover hook: a headline of roughly 8 words or fewer and an optional one-line sub. Each middle slide makes one point with a short headline and one short supporting line. The final slide is a clear call to action. Keep on-slide copy short enough to read on a phone. The caption ends on an opinion or a real question. Supply 3 to 8 specific hashtags and suggested alt text for the cover image.",
     help: "Ordered slides with a caption, hashtags and cover alt text.",
   },
   {

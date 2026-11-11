@@ -1,7 +1,7 @@
 # Roadmap
 
 ## Current
-- [ ] Group Library by content request, add admin/owner deletion for every status and whole topics, verify signed-in workflows
+- [x] Group Library by content request; admin/owner deletion of all statuses and whole topics; verified generation, checks, edits, approvals, send back, kill, bulk intake, Gate deletion, search, mobile and 121 tests
 - [x] Tailor BRS portfolio structure and formatted result/review display; sample generated, rechecked Approve / 100 and approved by Jorge; desktop/mobile verified, 111 tests passed
 - [x] Add Instagram carousel channel with editable slides; live BRS generation, slide edit, recheck (Approve / 100), submission and approval verified; desktop/mobile screenshots and all 106 tests passed
 - [x] Add visible BRS no-stacked-fragments rule and reviewer enforcement; live festival post Send back with stacked opening first, complete short sentences Approve / 100, coffee stack Send back / 80; 64 tests passed
@@ -24,7 +24,7 @@
 - [ ] Optional: each teammate posts from their own LinkedIn — needs a LinkedIn developer app
 - [x] Publish page: pick approved pieces + platforms, publish at once (LinkedIn live; Substack, blog, Medium, X, Instagram, Facebook as "Coming soon" placeholders)
 - [ ] Connect Substack, blog, Medium, X, Instagram, Facebook for real
-- [x] Delete a draft (drafts only; approved/in-review pieces can't be deleted)
+- [x] Admin/owner deletion for all statuses and complete Library topics, with confirmation
 - [x] Create content screen redesign (settings panel, collapsed tone, drafts as tabs)
 - [x] Guest demo: "Try the demo" with a private sample workspace (no sign-up)
 - [x] Home idea box: type an idea, pick channels/audience/goal/feel, write drafts

@@ -1,3 +1,4 @@
+import { SLIDE_MAX, SLIDE_MIN } from "@/lib/carousel-count";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useMemo, useState } from "react";
@@ -132,6 +133,7 @@ function CreatePage() {
   const [sliders, setSliders] = useState<SliderValues | null>(null);
   const [preset, setPreset] = useState<string | null>(null);
   const [hashtags, setHashtags] = useState(defaultHashtags());
+  const [slideCount, setSlideCount] = useState<number | null>(null);
   const [items, setItems] = useState<GeneratedItem[]>([]);
   const [errors, setErrors] = useState<{ channel: string; message: string }[]>([]);
   const [pending, setPending] = useState<ChannelId[]>([]);
@@ -281,6 +283,7 @@ function CreatePage() {
         channels,
         sliders: sliders!,
         hashtags,
+        slideCount: channels.includes("instagram_carousel") ? slideCount : null,
       };
       const settled = await Promise.allSettled(
         models.map((m) => generate({ data: { ...base, model: m } })),
@@ -613,6 +616,20 @@ function CreatePage() {
                       </span>
                     </div>
                   ))}
+              </div>
+            )}
+            {channels.includes("instagram_carousel") && (
+              <div className="space-y-1.5 border-t pt-3" role="group" aria-labelledby={`${p}-slides-label`}>
+                <span id={`${p}-slides-label`} className="flex items-center gap-1 text-xs font-medium">
+                  Carousel slides
+                  <HelpTip>Auto picks 4 to 7. Choose a number from {SLIDE_MIN} to {SLIDE_MAX} to get exactly that many: a cover, the points, and a final call to action.</HelpTip>
+                </span>
+                <div className="flex items-center gap-2">
+                  <Button type="button" size="sm" variant={slideCount === null ? "default" : "outline"} onClick={() => setSlideCount(null)} aria-pressed={slideCount === null}>Auto</Button>
+                  <Button type="button" size="icon" variant="outline" className="size-8" aria-label="Fewer slides" disabled={slideCount === SLIDE_MIN} onClick={() => setSlideCount((n) => Math.max(SLIDE_MIN, (n ?? 5) - 1))}>−</Button>
+                  <span className="w-12 text-center text-sm font-medium tabular-nums" aria-live="polite">{slideCount ?? "4–7"}</span>
+                  <Button type="button" size="icon" variant="outline" className="size-8" aria-label="More slides" disabled={slideCount === SLIDE_MAX} onClick={() => setSlideCount((n) => Math.min(SLIDE_MAX, (n ?? 5) + 1))}>+</Button>
+                </div>
               </div>
             )}
           </div>

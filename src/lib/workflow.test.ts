@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { availableActions, canDeleteDraft, csvCell, toCsv } from "./workflow";
+import { availableActions, csvCell, toCsv } from "./workflow";
 import { canPublish } from "./publish";
 
 describe("approval rules", () => {
@@ -36,17 +36,6 @@ describe("CSV export", () => {
 
   it("joins rows with Windows line endings for Excel", () => {
     expect(toCsv(["A", "B"], [["1", null]])).toBe("A,B\r\n1,");
-  });
-});
-
-describe("deleting drafts", () => {
-  it("drafts and pieces sent back for changes can be deleted", () => {
-    expect(canDeleteDraft("draft")).toBe(true);
-    expect(canDeleteDraft("changes_requested")).toBe(true);
-  });
-  it("pieces in review or approved can't be deleted", () => {
-    expect(canDeleteDraft("in_review")).toBe(false);
-    expect(canDeleteDraft("approved")).toBe(false);
   });
 });
 

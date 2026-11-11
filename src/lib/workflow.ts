@@ -88,7 +88,3 @@ export function toCsv(headers: string[], rows: unknown[][]): string {
   return [headers, ...rows].map((r) => r.map(csvCell).join(",")).join("\r\n");
 }
 
-/** Only work that hasn't been reviewed or approved can be deleted (the database enforces this too). */
-export function canDeleteDraft(status: string): boolean {
-  return status === "draft" || status === "changes_requested";
-}

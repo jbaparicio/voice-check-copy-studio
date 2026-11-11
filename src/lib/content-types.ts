@@ -1,7 +1,13 @@
 import type { ChannelId } from "./channels";
 
+export interface CarouselSlide {
+  headline: string;
+  supporting_line: string | null;
+}
+
 /** The fields every generated piece can have. Channel-specific extras are null when unused. */
 export interface ContentFields {
+  carousel_slides?: CarouselSlide[] | null;
   hook: string;
   body: string;
   hashtags: string[];
@@ -59,6 +65,7 @@ export function emptyFields(): ContentFields {
     h2s: null,
     meta_description: null,
     faq: null,
+    carousel_slides: null,
   };
 }
 
@@ -104,6 +111,7 @@ export function allText(fields: ContentFields): string {
     ...(fields.h2s ?? []),
     fields.meta_description,
     ...(fields.faq ?? []).flatMap((f) => [f.question, f.answer]),
+    ...(fields.carousel_slides ?? []).flatMap((s) => [s.headline, s.supporting_line]),
   ]
     .filter(Boolean)
     .join("\n");

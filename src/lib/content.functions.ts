@@ -15,7 +15,7 @@ import {
   buildInstructions,
   buildRevisionPrompt,
   buildSelectionPrompt,
-  contentSchema,
+  schemaForChannel,
   replacementSchema,
   hashtagSchema,
   type AdjustmentId,
@@ -60,6 +60,7 @@ function cleanFields(raw: Partial<ContentFields>): ContentFields {
     body: toPlainText(f.body ?? ""),
     cta: toPlainText(f.cta ?? ""),
     hashtags: Array.from(new Set(tags)),
+    carousel_slides: f.carousel_slides?.map((s) => ({ headline: toPlainText(s.headline), supporting_line: s.supporting_line === null ? null : toPlainText(s.supporting_line) })) ?? null,
   };
 }
 
@@ -149,7 +150,7 @@ export const generateContent = createServerFn({ method: "POST" })
           const { data: raw } = await writeStructured({
             instructions,
             prompt: buildChannelPrompt(kit, channel, data),
-            schema: contentSchema,
+            schema: schemaForChannel(channel),
             model: data.model,
           });
           const fields = cleanFields(raw);
@@ -294,7 +295,7 @@ export const reviseItem = createServerFn({ method: "POST" })
       const { data: raw } = await writeStructured({
         instructions: buildInstructions(ctx.kit),
         prompt,
-        schema: contentSchema,
+        schema: schemaForChannel(ctx.channel),
         model,
       });
       fields = cleanFields(raw);
@@ -440,7 +441,7 @@ export const generateVariants = createServerFn({ method: "POST" })
         const { data: raw } = await writeStructured({
           instructions,
           prompt: buildRevisionPrompt(base, ctx.current, angle, false),
-          schema: contentSchema,
+          schema: schemaForChannel(ctx.channel),
           model,
         });
         const fields = cleanFields(raw);
@@ -669,7 +670,7 @@ Never add facts, numbers, clients, awards, quotes or people that aren't in the a
           instruction,
           true,
         ),
-        schema: contentSchema,
+        schema: schemaForChannel(ctx.channel),
       });
       fields = cleanFields(raw);
     }

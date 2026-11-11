@@ -78,6 +78,7 @@ export function removeDashesFromFields(fields: ContentFields): ContentFields {
     faq:
       fields.faq?.map((f) => ({ question: removeDashes(f.question), answer: removeDashes(f.answer) })) ??
       null,
+    carousel_slides: fields.carousel_slides?.map((slide) => ({ headline: removeDashes(slide.headline), supporting_line: s(slide.supporting_line) })) ?? null,
   };
 }
 
@@ -90,6 +91,11 @@ export function runBrandCheck(
   const text = allText(fields);
   const editorial = Boolean(kit.noDashes);
   const checks: BrandCheckItem[] = [];
+  if (channel.id === "instagram_carousel") {
+    const slides = fields.carousel_slides ?? [];
+    const valid = slides.length >= 4 && slides.length <= 7 && slides.every((s) => s.headline.trim() && s.headline.length <= 80 && (s.supporting_line?.length ?? 0) <= 140);
+    checks.push({ id: "carousel", label: "Phone-readable carousel slides", status: valid ? "pass" : "fail", message: valid ? `${slides.length} ordered slides with short on-slide text.` : "Use 4 to 7 slides, each with a headline up to 80 characters and one supporting line up to 140 characters.", fix: valid ? undefined : "Keep the same substance but use 4 to 7 slides, each with a short headline (up to 80 characters) and one short supporting line (up to 140 characters). The first is a cover hook and the final is a clear call to action. Keep the caption unchanged." });
+  }
 
   // 1. Banned words
   const banned = findPhrases(text, kit.bannedWords);
@@ -255,7 +261,7 @@ export function runBrandCheck(
   const allowed = editorial ? channel.id !== "linkedin" : kit.exclamationAllowed[channel.id] ?? true;
   // Hook and CTA mirror the body: don't count those copies twice.
   const punctuationText = editorial
-    ? [fields.body, fields.subject_line, fields.h1, fields.alt_text, ...(fields.on_screen_text ?? [])].filter(Boolean).join("\n")
+    ? [fields.body, fields.subject_line, fields.h1, fields.alt_text, ...(fields.on_screen_text ?? []), ...(fields.carousel_slides ?? []).flatMap((s) => [s.headline, s.supporting_line])].filter(Boolean).join("\n")
     : text;
   const bangs = (punctuationText.match(/!/g) ?? []).length;
   checks.push(

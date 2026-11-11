@@ -5,10 +5,13 @@ import { toPlainText } from "./plain-text";
 /** The copy as plain text, ready to paste or post: no markdown symbols. */
 export function plainCopy(f: ContentFields): string {
   const parts = [
+    ...(f.carousel_slides ?? []).map((s, i) => `Slide ${i + 1}\n${s.headline}${s.supporting_line ? `\n${s.supporting_line}` : ""}`),
+    f.carousel_slides?.length ? "Caption" : "",
     f.subject_line ? `Subject: ${f.subject_line}` : "",
     f.h1 ?? "",
     f.body,
     f.hashtags.length ? f.hashtags.map((h) => `#${h}`).join(" ") : "",
+    f.carousel_slides?.length && f.alt_text ? `Cover alt text: ${f.alt_text}` : "",
   ].filter(Boolean);
   return toPlainText(parts.join("\n\n"));
 }
@@ -80,9 +83,9 @@ export const PLATFORMS: Platform[] = [
   {
     id: "instagram",
     label: "Instagram",
-    channels: ["instagram"],
+    channels: ["instagram", "instagram_carousel"],
     live: false,
-    hint: "Instagram captions",
+    hint: "Instagram captions and carousels",
   },
   {
     id: "facebook",

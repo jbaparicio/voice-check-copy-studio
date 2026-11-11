@@ -49,7 +49,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { StatusBadge } from "@/components/review-panel";
 import { CreateModeSwitch } from "@/components/create-mode-switch";
-import { ErrorCard, ResultSkeleton } from "@/components/result-card";
+import { ErrorCard, ResultSkeleton, ResultCard } from "@/components/result-card";
 import { plainCopy } from "@/lib/publish";
 import { CHANNELS, defaultHashtags, getChannel, type ChannelId } from "@/lib/channels";
 import {
@@ -843,7 +843,12 @@ function CreatePage() {
                         <div
                           className={cn(drafts.length > 1 && "grid items-start gap-4 lg:grid-cols-2")}
                         >
-                          {drafts.map((r) => (
+                          {drafts.map((r) => r.channel === "instagram_carousel" ? (
+                            <div key={r.id} className="min-w-0 space-y-3">
+                              <ResultCard item={r} kit={checkKit} onUpdate={(updated) => setItems((all) => all.map((x) => x.id === updated.id ? updated : x))} onVariants={(variants) => setItems((all) => [...all, ...variants])} />
+                              <Button asChild variant="outline"><Link to="/library/$itemId" params={{ itemId: r.id }}>Open review <ArrowRight className="size-4" /></Link></Button>
+                            </div>
+                          ) : (
                             <DraftPreview
                               key={r.id}
                               item={r}

@@ -1,6 +1,7 @@
 # Roadmap
 
 ## Current
+- [ ] Group Library by content request, add admin/owner deletion for every status and whole topics, verify signed-in workflows
 - [x] Tailor BRS portfolio structure and formatted result/review display; sample generated, rechecked Approve / 100 and approved by Jorge; desktop/mobile verified, 111 tests passed
 - [x] Add Instagram carousel channel with editable slides; live BRS generation, slide edit, recheck (Approve / 100), submission and approval verified; desktop/mobile screenshots and all 106 tests passed
 - [x] Add visible BRS no-stacked-fragments rule and reviewer enforcement; live festival post Send back with stacked opening first, complete short sentences Approve / 100, coffee stack Send back / 80; 64 tests passed

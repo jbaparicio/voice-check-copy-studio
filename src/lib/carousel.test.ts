@@ -24,6 +24,12 @@ describe("Instagram carousel", () => {
       expect(schemaForChannel("instagram_carousel").safeParse(copy).success).toBe(count >= 4 && count <= 7);
     }
   });
+  it("a chosen slide count requires exactly that many slides", () => {
+    for (const count of [8, 9, 10]) {
+      const copy = { ...fields, carousel_slides: Array.from({ length: count }, () => ({ headline: "One point", supporting_line: "One short line." })) };
+      expect(schemaForChannel("instagram_carousel", undefined, 9).safeParse(copy).success).toBe(count === 9);
+    }
+  });
   it("requires 3 through 8 generated hashtags and cover alt text", () => {
     for (const count of [2, 3, 8, 9]) expect(schemaForChannel("instagram_carousel").safeParse({ ...fields, hashtags: Array.from({ length: count }, (_, i) => `Tag${i}`) }).success).toBe(count >= 3 && count <= 8);
     expect(schemaForChannel("instagram_carousel").safeParse({ ...fields, alt_text: null }).success).toBe(false);

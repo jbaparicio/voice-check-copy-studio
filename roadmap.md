@@ -33,3 +33,4 @@
 - [x] Highlight words in a draft and ask for a change to only that part
 - [x] Add Battle Royal Studios brand kit (data only) to the owner's team
 - [x] Restored automatic team setup for new sign-ups
+- [x] Yellow highlights for flagged words + carousel slide count (3 to 10, Auto 4 to 7)

@@ -1,3 +1,4 @@
+import { normaliseSlideCount } from "./carousel-count";
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import type { Json } from "@/integrations/supabase/types";
@@ -116,6 +117,7 @@ export const generateContent = createServerFn({ method: "POST" })
       link: input.link?.trim() || null,
       exampleIds: (input.exampleIds ?? []).slice(0, 5),
       model: isWriterModel(input.model) ? input.model : DEFAULT_WRITER_MODEL,
+      slideCount: normaliseSlideCount(input.slideCount),
     };
   })
   .handler(async ({ data, context }) => {
@@ -150,7 +152,7 @@ export const generateContent = createServerFn({ method: "POST" })
           const { data: raw } = await writeStructured({
             instructions,
             prompt: buildChannelPrompt(kit, channel, data),
-            schema: schemaForChannel(channel, kit),
+            schema: schemaForChannel(channel, kit, data.slideCount),
             model: data.model,
           });
           const fields = cleanFields(raw);
@@ -221,6 +223,8 @@ async function loadItemContext(supabase: Parameters<typeof loadBrandKit>[0], ite
     exampleIds: req?.example_ids ?? [],
     sliders: normaliseSliders(req?.sliders),
     hashtags: ((req?.hashtags as Record<string, number>) ?? {}) as GenerationInput["hashtags"],
+    // Rewrites keep the draft's current slide count (3 to 10); otherwise Auto.
+    slideCount: normaliseSlideCount((item.fields as unknown as ContentFields | null)?.carousel_slides?.length),
   };
   const channel = item.channel as ChannelId;
   const model = isWriterModel(req?.model) ? req.model : DEFAULT_WRITER_MODEL;
@@ -295,7 +299,7 @@ export const reviseItem = createServerFn({ method: "POST" })
       const { data: raw } = await writeStructured({
         instructions: buildInstructions(ctx.kit),
         prompt,
-        schema: schemaForChannel(ctx.channel, ctx.kit),
+        schema: schemaForChannel(ctx.channel, ctx.kit, ctx.input.slideCount),
         model,
       });
       fields = cleanFields(raw);
@@ -441,7 +445,7 @@ export const generateVariants = createServerFn({ method: "POST" })
         const { data: raw } = await writeStructured({
           instructions,
           prompt: buildRevisionPrompt(base, ctx.current, angle, false),
-          schema: schemaForChannel(ctx.channel, ctx.kit),
+          schema: schemaForChannel(ctx.channel, ctx.kit, ctx.input.slideCount),
           model,
         });
         const fields = cleanFields(raw);
@@ -670,7 +674,7 @@ Never add facts, numbers, clients, awards, quotes or people that aren't in the a
           instruction,
           true,
         ),
-        schema: schemaForChannel(ctx.channel, ctx.kit),
+        schema: schemaForChannel(ctx.channel, ctx.kit, ctx.input.slideCount),
       });
       fields = cleanFields(raw);
     }

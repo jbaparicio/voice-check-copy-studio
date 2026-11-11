@@ -15,6 +15,13 @@
       "when": 1794312276560,
       "tag": "0001_restore_signup_trigger",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1794405969548,
+      "tag": "0002_admin_content_and_topic_deletion",
+      "breakpoints": true
     }
   ]
 }

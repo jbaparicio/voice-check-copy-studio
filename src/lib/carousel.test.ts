@@ -5,6 +5,7 @@ import { getChannel } from "./channels";
 import { runBrandCheck, removeDashesFromFields } from "./brand-check";
 import { applySpanFix, fingerprint, isReviewFresh } from "./review";
 import { plainCopy, planPublishing } from "./publish";
+import { z } from "zod/v4";
 
 const kit = { noDashes: true, bannedWords: ["synergy"], preferred: [], spellingVariant: "en-GB", emojiPolicy: "none" as const, exclamationAllowed: {}, neverNames: [] };
 const fields: ContentFields = {
@@ -18,6 +19,11 @@ const fields: ContentFields = {
   ],
 };
 describe("Instagram carousel", () => {
+  it("requires every generated output field for OpenAI strict structured output", () => {
+    const schema = z.toJSONSchema(schemaForChannel("linkedin"));
+    expect(schema.required).toContain("carousel_slides");
+    expect(schema.required?.length).toBe(Object.keys(schema.properties ?? {}).length);
+  });
   it("accepts 4 through 7 slides and rejects 3 or 8", () => {
     for (const count of [3, 4, 5, 6, 7, 8]) {
       const copy = { ...fields, carousel_slides: Array.from({ length: count }, () => ({ headline: "One point", supporting_line: "One short line." })) };

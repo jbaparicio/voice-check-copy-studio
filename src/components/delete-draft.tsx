@@ -13,19 +13,24 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { canDeleteDraft } from "@/lib/workflow";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
-/** Delete a draft after a confirmation. Hidden for pieces in review or approved. */
+/** Confirmed, database-authorized deletion for a piece or a complete request. */
 export function DeleteDraftButton({
   itemId,
-  status,
+  brandId,
+  requestId,
+  pieceCount = 1,
   onDeleted,
   size = "sm",
   iconOnly = false,
   className,
 }: {
-  itemId: string;
-  status: string;
+  itemId?: string | undefined;
+  brandId?: string | undefined;
+  requestId?: string | undefined;
+  pieceCount?: number;
+  status?: string;
   onDeleted: () => void;
   size?: "sm" | "default";
   iconOnly?: boolean;
@@ -33,22 +38,42 @@ export function DeleteDraftButton({
 }) {
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
-  if (!canDeleteDraft(status)) return null;
+  const qc = useQueryClient();
+  const permission = useQuery({
+    queryKey: ["delete-permission", brandId ?? itemId],
+    queryFn: async () => {
+      let id = brandId;
+      if (!id && itemId) {
+        const { data, error } = await supabase.from("content_items").select("brand_id").eq("id", itemId).maybeSingle();
+        if (error) throw error;
+        id = data?.brand_id;
+      }
+      if (!id) return null;
+      const { data, error } = await supabase.rpc("can_delete_brand", { _brand: id });
+      if (error) throw error;
+      return data ? id : null;
+    },
+  });
+  const topic = Boolean(requestId);
+  if (!permission.data) return null;
 
   async function remove() {
+    if (!permission.data) return;
     setBusy(true);
-    const { error } = await supabase.from("content_items").delete().eq("id", itemId);
+    const { error } = await supabase.rpc("delete_library_content", {
+      _brand: permission.data, ...(itemId ? { _item: itemId } : {}),
+      ...(requestId ? { _request: requestId } : {}), _expected_count: pieceCount,
+    });
     setBusy(false);
     if (error) {
-      toast.error(
-        error.message.includes("Only drafts")
-          ? "Only drafts can be deleted."
-          : "We couldn't delete this draft. Please try again.",
-      );
+      toast.error(error.message || "We couldn't delete this content. Please try again.");
       return;
     }
     setOpen(false);
-    toast.success("Draft deleted.");
+    toast.success(topic ? "Topic deleted." : "Piece deleted.");
+    for (const key of ["library", "gate", "dashboard", "item", "versions", "siblings", "publish-items", "activity"]) {
+      void qc.invalidateQueries({ queryKey: [key] });
+    }
     onDeleted();
   }
 
@@ -63,19 +88,20 @@ export function DeleteDraftButton({
           e.stopPropagation();
           setOpen(true);
         }}
-        aria-label="Delete draft"
-        title="Delete draft"
+        aria-label={topic ? "Delete topic" : "Delete piece"}
+        title={topic ? "Delete topic" : "Delete piece"}
       >
         <Trash2 className="size-3.5" aria-hidden="true" />
-        {!iconOnly && "Delete draft"}
+        {!iconOnly && (topic ? "Delete topic" : "Delete piece")}
       </Button>
       <AlertDialog open={open} onOpenChange={(o) => !busy && setOpen(o)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete this draft?</AlertDialogTitle>
+            <AlertDialogTitle>{topic ? "Delete this topic?" : "Delete this piece?"}</AlertDialogTitle>
             <AlertDialogDescription>
-              It's removed for everyone on the team, along with its alternatives and history. This
-              can't be undone.
+              {topic ? `All ${pieceCount} pieces in this topic` : "This piece"} will be removed for everyone on the team,
+              including saved versions and activity history. Other pieces are kept. This can't be undone.
+              Deleting a live post here does not remove it from LinkedIn.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -88,7 +114,7 @@ export function DeleteDraftButton({
                 void remove();
               }}
             >
-              {busy ? "Deleting…" : "Delete draft"}
+              {busy ? "Deleting…" : topic ? `Delete ${pieceCount} pieces` : "Delete piece"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

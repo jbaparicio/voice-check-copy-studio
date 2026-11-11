@@ -3,7 +3,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { DeleteDraftButton } from "@/components/delete-draft";
 import { useMemo } from "react";
-import { CheckCircle2, Copy, Download, Library, Search, Send } from "lucide-react";
+import { ArrowLeft, Folder, CheckCircle2, Copy, Download, Library, Search, Send } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { EmptyState, HelpTip, PageHeader } from "@/components/common";
@@ -24,12 +24,14 @@ import { CHANNELS, getChannel } from "@/lib/channels";
 import type { ContentFields } from "@/lib/content-types";
 import { useActiveBrand, useBrandKit } from "@/lib/use-brand";
 import { useNames } from "@/lib/use-team";
+import { groupTopics } from "@/lib/library-topics";
 import { STATUS_LABEL, STATUS_ORDER, toCsv } from "@/lib/workflow";
 
 const DATES = { all: "Any time", "7": "Last 7 days", "30": "Last 30 days", "90": "Last 90 days" };
 type DateRange = keyof typeof DATES;
 
 interface LibrarySearch {
+  topic?: string | undefined;
   q?: string | undefined;
   channel?: string | undefined;
   status?: string | undefined;
@@ -42,12 +44,13 @@ const str = (v: unknown) => (typeof v === "string" && v ? v : undefined);
 
 export const Route = createFileRoute("/_authenticated/library")({
   validateSearch: (s: Record<string, unknown>): LibrarySearch => ({
+    topic: str(s["topic"]),
     q: str(s["q"]),
     channel: str(s["channel"]),
     status: str(s["status"]),
     persona: str(s["persona"]),
     goal: str(s["goal"]),
-    date: str(s["date"]) && str(s["date"])! in DATES ? (s["date"] as DateRange) : undefined,
+    date: typeof s["date"] === "string" && s["date"] in DATES ? (s["date"] as DateRange) : undefined,
   }),
   head: () => ({
     meta: [
@@ -93,14 +96,15 @@ function LibraryPage() {
     queryKey: ["library", brand?.id],
     enabled: Boolean(brand?.id),
     queryFn: async () => {
+      if (!brand) return [];
       const { data, error } = await supabase
         .from("content_items")
         .select(
-          "id, channel, fields, status, brand_score, created_at, created_by, approved_by, approved_at, variant_of, content_requests(brief, persona_id, goal_id)",
+          "id, request_id, channel, fields, status, brand_score, created_at, created_by, approved_by, approved_at, variant_of, content_requests(brief, created_at, persona_id, goal_id)",
         )
-        .eq("brand_id", brand!.id)
+        .eq("brand_id", brand.id)
         .order("created_at", { ascending: false })
-        .limit(500);
+;
       if (error) throw error;
       return data;
     },
@@ -129,6 +133,11 @@ function LibraryPage() {
     });
   }, [items.data, q, channel, status, persona, goal, date]);
 
+  const topics = useMemo(() => groupTopics(items.data ?? []), [items.data]);
+  const matchingIds = new Set(filtered.map(i => i.id));
+  const visibleTopics = topics.filter(t => t.pieces.some(i => matchingIds.has(i.id)));
+  const activeTopic = topics.find(t => t.id === search.topic);
+  const visiblePieces = activeTopic?.pieces.filter(i => matchingIds.has(i.id)) ?? [];
   const approved = filtered.filter((i) => i.status === "approved");
   const hasFilters = Boolean(
     q ||
@@ -257,7 +266,7 @@ function LibraryPage() {
         {items.data && (
           <div className="flex flex-wrap items-center justify-between gap-2 text-sm text-muted-foreground">
             <p aria-live="polite">
-              Showing {filtered.length} of {items.data.length}
+              {visibleTopics.length} topics · {filtered.length} of {items.data.length} pieces
               <HelpTip>
                 The CSV export includes only the approved pieces that match your filters, as plain
                 text that's ready to paste.
@@ -267,7 +276,7 @@ function LibraryPage() {
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => navigate({ search: {}, replace: true })}
+                onClick={() => navigate({ search: { topic: search.topic }, replace: true })}
               >
                 Clear filters
               </Button>
@@ -275,13 +284,29 @@ function LibraryPage() {
           </div>
         )}
 
+        {search.topic && (
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b pb-4">
+            <div className="min-w-0">
+              <Button variant="ghost" size="sm" onClick={() => set({ topic: undefined })}>
+                <ArrowLeft className="size-4" /> All topics
+              </Button>
+              <h2 className="mt-2 break-words text-2xl">{activeTopic?.title ?? "Topic not found"}</h2>
+              {activeTopic && <p className="mt-1 text-sm text-muted-foreground">{activeTopic.pieces.length} pieces · {formatDate(activeTopic.date)}</p>}
+            </div>
+            {activeTopic && <DeleteDraftButton brandId={brand?.id} requestId={activeTopic.requestId ?? undefined}
+              itemId={activeTopic.requestId ? undefined : activeTopic.pieces[0]?.id} pieceCount={activeTopic.pieces.length}
+              onDeleted={() => set({ topic: undefined })} />}
+          </div>
+        )}
         {items.isLoading ? (
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
             {[0, 1, 2].map((i) => (
               <Skeleton key={i} className="h-48 rounded-xl" />
             ))}
           </div>
-        ) : !filtered.length ? (
+        ) : items.error ? (
+          <p role="alert" className="text-destructive">We couldn't load the Library. Please refresh.</p>
+        ) : !(search.topic ? visiblePieces.length : visibleTopics.length) ? (
           <EmptyState
             icon={<Library className="size-5" />}
             title={items.data?.length ? "Nothing matches those filters" : "Nothing written yet"}
@@ -297,14 +322,30 @@ function LibraryPage() {
               ? "Try clearing a filter or searching for something else."
               : "Everything you generate is saved here automatically."}
           </EmptyState>
+        ) : !search.topic ? (
+          <ul className="space-y-3">
+            {visibleTopics.map(topic => (
+              <li key={topic.id} className="flex items-center gap-4 rounded-lg border bg-card p-5 shadow-card">
+                <Folder className="size-6 shrink-0 text-primary" aria-hidden="true" />
+                <Link to="/library" search={{ ...search, topic: topic.id }} className="min-w-0 flex-1">
+                  <h2 title={topic.title} className="line-clamp-2 break-words font-sans text-lg font-semibold text-foreground">{topic.title}</h2>
+                  <p className="mt-1 text-sm text-muted-foreground">{formatDate(topic.date)} · {topic.pieces.length} {topic.pieces.length === 1 ? "piece" : "pieces"} · {[...new Set(topic.pieces.map(i => getChannel(i.channel).label))].join(", ")}</p>
+                  <p className="mt-1 text-sm">{topic.pieces.filter(i => i.status === "approved").length} approved · {topic.pieces.filter(i => i.status === "in_review").length} in review</p>
+                </Link>
+                <DeleteDraftButton brandId={brand?.id} requestId={topic.requestId ?? undefined}
+                  itemId={topic.requestId ? undefined : topic.pieces[0]?.id} pieceCount={topic.pieces.length} iconOnly
+                  onDeleted={() => {}} />
+              </li>
+            ))}
+          </ul>
         ) : (
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-            {filtered.map((i) => {
+            {visiblePieces.map((i) => {
               const f = i.fields as unknown as ContentFields;
               return (
                 <article
                   key={i.id}
-                  className="relative flex flex-col rounded-xl border bg-card p-5 transition-shadow focus-within:ring-2 focus-within:ring-ring hover:shadow-sm"
+                  className="relative flex flex-col rounded-lg border bg-card p-5 shadow-card transition-shadow focus-within:ring-2 focus-within:ring-ring hover:shadow-sm"
                 >
                   <div className="mb-3 flex flex-wrap items-center gap-2">
                     <Badge variant="outline">{getChannel(i.channel).short}</Badge>
@@ -341,6 +382,7 @@ function LibraryPage() {
                     <span className="flex gap-2">
                       <DeleteDraftButton
                         itemId={i.id}
+                        brandId={brand?.id}
                         status={i.status}
                         iconOnly
                         className="relative z-10 size-8 text-muted-foreground hover:text-destructive"

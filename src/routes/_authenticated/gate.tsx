@@ -1,3 +1,4 @@
+import { DeleteDraftButton } from "@/components/delete-draft";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
@@ -77,10 +78,11 @@ function GatePage() {
     queryKey: ["gate", brand?.id],
     enabled: Boolean(brand?.id),
     queryFn: async (): Promise<GateRow[]> => {
+      if (!brand) return [];
       const { data, error } = await supabase
         .from("content_items")
         .select("id, channel, created_at, brand_score, fields, ai_review")
-        .eq("brand_id", brand!.id)
+        .eq("brand_id", brand.id)
         .eq("status", "in_review")
         .order("created_at", { ascending: false });
       if (error) throw error;
@@ -193,6 +195,9 @@ function GatePage() {
                       </Button>
                     </>
                   )}
+                  <DeleteDraftButton itemId={row.id} brandId={brand?.id} iconOnly onDeleted={() => {
+                    qc.setQueryData<GateRow[]>(["gate", brand?.id], old => (old ?? []).filter(r => r.id !== row.id));
+                  }} />
                   <Button size="sm" variant="ghost" asChild>
                     <Link to="/library/$itemId" params={{ itemId: row.id }}>
                       Open <ExternalLink className="size-3.5" aria-hidden="true" />

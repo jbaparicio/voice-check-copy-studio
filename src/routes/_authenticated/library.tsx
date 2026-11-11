@@ -328,7 +328,7 @@ function LibraryPage() {
               <li key={topic.id} className="flex items-center gap-4 rounded-lg border bg-card p-5 shadow-card">
                 <Folder className="size-6 shrink-0 text-primary" aria-hidden="true" />
                 <Link to="/library" search={{ ...search, topic: topic.id }} className="min-w-0 flex-1">
-                  <h2 className="break-words font-sans text-lg font-semibold text-foreground">{topic.title}</h2>
+                  <h2 title={topic.title} className="line-clamp-2 break-words font-sans text-lg font-semibold text-foreground">{topic.title}</h2>
                   <p className="mt-1 text-sm text-muted-foreground">{formatDate(topic.date)} · {topic.pieces.length} {topic.pieces.length === 1 ? "piece" : "pieces"} · {[...new Set(topic.pieces.map(i => getChannel(i.channel).label))].join(", ")}</p>
                   <p className="mt-1 text-sm">{topic.pieces.filter(i => i.status === "approved").length} approved · {topic.pieces.filter(i => i.status === "in_review").length} in review</p>
                 </Link>

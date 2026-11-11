@@ -71,7 +71,7 @@ export function DeleteDraftButton({
     }
     setOpen(false);
     toast.success(topic ? "Topic deleted." : "Piece deleted.");
-    for (const key of ["library", "gate", "dashboard", "item", "versions", "siblings", "publish", "activity"]) {
+    for (const key of ["library", "gate", "dashboard", "item", "versions", "siblings", "publish-items", "activity"]) {
       void qc.invalidateQueries({ queryKey: [key] });
     }
     onDeleted();

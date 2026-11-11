@@ -141,7 +141,7 @@ THE ${getChannel(channel).label.toUpperCase()} DRAFT TO REVIEW
 ${draftText}`;
 
   const { data } = await writeStructured({
-    instructions: brs ? BRS_REVIEWER : REVIEWER,
+    instructions: brs ? `${BRS_REVIEWER}${channel === "case_study" ? '\n\nAUTHORITATIVE BRS WEBSITE PROJECT-PAGE EXCEPTIONS: This is not a social post. The channel-specific project-page format in the review context overrides editorial rules 4, 5 and 7 only as follows: a bold CTA question followed by one short contact invitation is the REQUIRED correct ending, never send it back for ending on the invitation. Substantive delivered project facts may describe BRS work. The public client may appear in the H1 and one credit line. Markdown headings, bold numbers and checklist/list markers are layout, not dashes or stacked fragments. Do not require FAQ. All sourcing, NDA, sentence and voice rules otherwise remain unchanged.' : ""}` : REVIEWER,
     prompt,
     schema: reviewSchema,
     effort: "medium",

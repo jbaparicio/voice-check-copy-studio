@@ -1,4 +1,4 @@
-# BRS-Demo-Brand Studio
+# Demo-Brand-Voice Studio
 
 Build a web app called "Brand Voice Studio": an AI copywriting tool that writes on-brand content for different channels. It's for marketing teams who are not technical. Every screen should be self-explanatory, use plain language (no AI or dev jargon), and have helpful empty states and tooltips. Visual style: clean, calm and modern, with lots of white space and a single accent colour. It must work on mobile and pass basic accessibility (contrast, keyboard navigation, labels).
 

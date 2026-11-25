@@ -706,6 +706,85 @@ export type Database = {
         }
         Relationships: []
       }
+      slack_link_nonces: {
+        Row: {
+          nonce: string
+          used_at: string
+        }
+        Insert: {
+          nonce: string
+          used_at?: string
+        }
+        Update: {
+          nonce?: string
+          used_at?: string
+        }
+        Relationships: []
+      }
+      slack_links: {
+        Row: {
+          brand_id: string
+          created_at: string
+          slack_team_id: string
+          slack_user_id: string
+          user_id: string
+        }
+        Insert: {
+          brand_id: string
+          created_at?: string
+          slack_team_id: string
+          slack_user_id: string
+          user_id: string
+        }
+        Update: {
+          brand_id?: string
+          created_at?: string
+          slack_team_id?: string
+          slack_user_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "slack_links_brand_id_fkey"
+            columns: ["brand_id"]
+            isOneToOne: false
+            referencedRelation: "brands"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      slack_messages: {
+        Row: {
+          channel_id: string
+          content_item_id: string
+          created_at: string
+          message_ts: string
+          slack_team_id: string
+        }
+        Insert: {
+          channel_id: string
+          content_item_id: string
+          created_at?: string
+          message_ts: string
+          slack_team_id: string
+        }
+        Update: {
+          channel_id?: string
+          content_item_id?: string
+          created_at?: string
+          message_ts?: string
+          slack_team_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "slack_messages_content_item_id_fkey"
+            columns: ["content_item_id"]
+            isOneToOne: true
+            referencedRelation: "content_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       workspace_invites: {
         Row: {
           accepted_at: string | null

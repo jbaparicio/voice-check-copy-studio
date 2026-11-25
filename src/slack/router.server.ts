@@ -29,7 +29,7 @@ import {
   type SlackLink,
 } from "./links.server";
 import { SlackIdentityError, withUserClient } from "./session.server";
-import { ephemeral, respond, slackApi } from "./slack-api.server";
+import { ephemeral, respond, slackApi, slackDiagnostics } from "./slack-api.server";
 import { toSlackSummary, type StoredItemRow } from "./summary";
 import { verifySlackSignature } from "./verify";
 import type { ChannelId } from "@/lib/channels";
@@ -105,6 +105,8 @@ async function handleCommand(
   switch (cmd.kind) {
     case "help":
       return json(ephemeral(HELP_TEXT));
+    case "diag":
+      return json(ephemeral(await slackDiagnostics()));
     case "error":
       return json(ephemeral(cmd.message));
     case "link": {

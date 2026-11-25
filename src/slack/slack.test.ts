@@ -482,3 +482,18 @@ describe("Slack card polish", () => {
     expect(JSON.stringify(clean.blocks)).toContain("Nothing flagged");
   });
 });
+
+import { tokenKind } from "./slack-api.server";
+
+describe("/brand diag", () => {
+  it("parses the command", () => {
+    expect(parseCommand("diag")).toEqual({ kind: "diag" });
+  });
+  it("classifies tokens without exposing them", () => {
+    expect(tokenKind(undefined)).toBe("missing");
+    expect(tokenKind(" xoxb-1-2-abc ")).toBe("bot");
+    expect(tokenKind('"xoxb-1-2-abc"')).toBe("bot");
+    expect(tokenKind("xoxp-1-2")).toBe("user");
+    expect(tokenKind("8f3a9c")).toBe("other");
+  });
+});

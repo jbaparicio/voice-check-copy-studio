@@ -29,6 +29,7 @@ export type SlackCommand =
   | { kind: "link" }
   | { kind: "unlink" }
   | { kind: "queue" }
+  | { kind: "diag" }
   | { kind: "check"; channel: ChannelId; text: string }
   | { kind: "error"; message: string };
 
@@ -49,6 +50,7 @@ export function parseCommand(raw: string): SlackCommand {
   if (verb === "link" || verb === "connect") return { kind: "link" };
   if (verb === "unlink" || verb === "disconnect") return { kind: "unlink" };
   if (verb === "queue" || verb === "gate") return { kind: "queue" };
+  if (verb === "diag") return { kind: "diag" };
   if (verb !== "check") {
     return { kind: "error", message: `I don't know "${first}". Try \`/brand help\`.` };
   }

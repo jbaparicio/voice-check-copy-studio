@@ -46,3 +46,33 @@ export async function respond(
 export function ephemeral(text: string, extra: Record<string, unknown> = {}) {
   return { response_type: "ephemeral", text, ...extra };
 }
+
+/** What kind of token the server holds, without revealing any of it. */
+export function tokenKind(raw: string | undefined): "missing" | "bot" | "user" | "other" {
+  const t = (raw ?? "").trim().replace(/^["']|["']$/g, "");
+  if (!t) return "missing";
+  if (t.startsWith("xoxb-")) return "bot";
+  if (t.startsWith("xoxp-")) return "user";
+  return "other";
+}
+
+/** Setup check for `/brand diag`: never returns any part of a secret. */
+export async function slackDiagnostics(): Promise<string> {
+  const kind = tokenKind(process.env["SLACK_BOT_TOKEN"]);
+  const lines = [
+    `Bot token: ${kind === "bot" ? "present, bot token (xoxb-)" : kind === "user" ? "present, but it is a USER token (xoxp-). Use the Bot User OAuth Token" : kind === "other" ? "present, but it is not a Slack bot token" : "missing"}`,
+    `Link secret: ${process.env["SLACK_LINK_SECRET"] ? "present" : "missing"}`,
+  ];
+  if (kind !== "missing") {
+    const r = (await slackApi("auth.test", {})) as SlackApiResult & {
+      team?: string;
+      user?: string;
+    };
+    lines.push(
+      r.ok
+        ? `Slack accepts the token: bot @${r.user ?? "?"} in ${r.team ?? "?"}`
+        : `Slack rejects the token: ${r.error ?? "unknown error"}`,
+    );
+  }
+  return lines.join("\n");
+}

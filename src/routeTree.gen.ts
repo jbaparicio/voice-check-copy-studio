@@ -14,6 +14,7 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as AuthenticatedBrandKitRouteImport } from './routes/_authenticated/brand-kit'
+import { Route as AuthenticatedConnectSlackRouteImport } from './routes/_authenticated/connect-slack'
 import { Route as AuthenticatedCreateRouteImport } from './routes/_authenticated/create'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedGateRouteImport } from './routes/_authenticated/gate'
@@ -48,6 +49,12 @@ const AuthenticatedBrandKitRoute = AuthenticatedBrandKitRouteImport.update({
   path: '/brand-kit',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedConnectSlackRoute =
+  AuthenticatedConnectSlackRouteImport.update({
+    id: '/connect-slack',
+    path: '/connect-slack',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedCreateRoute = AuthenticatedCreateRouteImport.update({
   id: '/create',
   path: '/create',
@@ -101,6 +108,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/reset-password': typeof ResetPasswordRoute
   '/brand-kit': typeof AuthenticatedBrandKitRoute
+  '/connect-slack': typeof AuthenticatedConnectSlackRoute
   '/create': typeof AuthenticatedCreateRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/gate': typeof AuthenticatedGateRoute
@@ -116,6 +124,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/reset-password': typeof ResetPasswordRoute
   '/brand-kit': typeof AuthenticatedBrandKitRoute
+  '/connect-slack': typeof AuthenticatedConnectSlackRoute
   '/create': typeof AuthenticatedCreateRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/gate': typeof AuthenticatedGateRoute
@@ -133,6 +142,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/reset-password': typeof ResetPasswordRoute
   '/_authenticated/brand-kit': typeof AuthenticatedBrandKitRoute
+  '/_authenticated/connect-slack': typeof AuthenticatedConnectSlackRoute
   '/_authenticated/create': typeof AuthenticatedCreateRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/gate': typeof AuthenticatedGateRoute
@@ -150,6 +160,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/reset-password'
     | '/brand-kit'
+    | '/connect-slack'
     | '/create'
     | '/dashboard'
     | '/gate'
@@ -165,6 +176,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/reset-password'
     | '/brand-kit'
+    | '/connect-slack'
     | '/create'
     | '/dashboard'
     | '/gate'
@@ -181,6 +193,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/reset-password'
     | '/_authenticated/brand-kit'
+    | '/_authenticated/connect-slack'
     | '/_authenticated/create'
     | '/_authenticated/dashboard'
     | '/_authenticated/gate'
@@ -234,6 +247,13 @@ declare module '@tanstack/react-router' {
       path: '/brand-kit'
       fullPath: '/brand-kit'
       preLoaderRoute: typeof AuthenticatedBrandKitRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/connect-slack': {
+      id: '/_authenticated/connect-slack'
+      path: '/connect-slack'
+      fullPath: '/connect-slack'
+      preLoaderRoute: typeof AuthenticatedConnectSlackRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/create': {
@@ -304,6 +324,7 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedBrandKitRoute: typeof AuthenticatedBrandKitRoute
+  AuthenticatedConnectSlackRoute: typeof AuthenticatedConnectSlackRoute
   AuthenticatedCreateRoute: typeof AuthenticatedCreateRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedGateRoute: typeof AuthenticatedGateRoute
@@ -317,6 +338,7 @@ interface AuthenticatedRouteRouteChildren {
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedBrandKitRoute: AuthenticatedBrandKitRoute,
+  AuthenticatedConnectSlackRoute: AuthenticatedConnectSlackRoute,
   AuthenticatedCreateRoute: AuthenticatedCreateRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedGateRoute: AuthenticatedGateRoute,

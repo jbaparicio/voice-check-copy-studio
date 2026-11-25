@@ -10,7 +10,8 @@ export const Route = createFileRoute("/_authenticated")({
       throw redirect({ to: "/auth", search: { redirect: location.href } });
     }
     // First login: send people to the friendly setup screen once.
-    if (location.pathname !== "/onboarding") {
+    // /connect-slack is exempt: its one-time token from Slack would be lost on the detour.
+    if (location.pathname !== "/onboarding" && location.pathname !== "/connect-slack") {
       const { data: profile } = await supabase
         .from("profiles")
         .select("onboarding_done")

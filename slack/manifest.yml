@@ -1,0 +1,29 @@
+# Slack app manifest for Brand Voice Studio.
+# Create the app at https://api.slack.com/apps → "From a manifest", paste this file,
+# then replace YOUR-APP-URL with the published studio URL (no trailing slash).
+display_information:
+  name: Brand Voice Studio
+  description: Check posts against the brand kit. A named approver decides.
+  background_color: "#0f4c45"
+features:
+  bot_user:
+    display_name: Brand Voice Studio
+    always_online: false
+  slash_commands:
+    - command: /brand
+      url: https://YOUR-APP-URL/api/slack/commands
+      description: Check a post, see the review queue, or link your account
+      usage_hint: "check [instagram:] <post> | queue | link | unlink | help"
+      should_escape: false
+oauth_config:
+  scopes:
+    bot:
+      - commands # the /brand command
+      - chat:write # post check results and update them after a decision
+settings:
+  interactivity:
+    is_enabled: true
+    request_url: https://YOUR-APP-URL/api/slack/interactions
+  org_deploy_enabled: false
+  socket_mode_enabled: false
+  token_rotation_enabled: false

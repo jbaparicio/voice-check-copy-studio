@@ -44,16 +44,7 @@ function isH3SwallowedErrorBody(body: string): boolean {
   }
 }
 
-type ExecutionCtx = { waitUntil?: (p: Promise<unknown>) => void } | undefined;
-
-/** Keep work alive after the response (Workers); in plain Node, just let it run. */
-function backgroundRunner(ctx: unknown) {
-  const c = ctx as ExecutionCtx;
-  return (p: Promise<unknown>) => {
-    const guarded = p.catch((e: unknown) => console.error("[background]", e));
-    if (c && typeof c.waitUntil === "function") c.waitUntil(guarded);
-  };
-}
+import { resolveWaitUntil } from "./slack/background";
 
 export default {
   async fetch(request: Request, env: unknown, ctx: unknown) {
@@ -62,7 +53,7 @@ export default {
     if (new URL(request.url).pathname.startsWith("/api/slack/")) {
       try {
         const { handleSlackRequest } = await import("./slack/router.server");
-        return await handleSlackRequest(request, backgroundRunner(ctx));
+        return await handleSlackRequest(request, resolveWaitUntil(request, ctx));
       } catch (error) {
         console.error(error);
         return new Response("", { status: 500 });

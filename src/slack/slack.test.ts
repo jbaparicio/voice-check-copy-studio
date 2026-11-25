@@ -414,3 +414,35 @@ describe("agent tool contracts", () => {
       expect(isAgentTool(n)).toBe(false);
   });
 });
+
+import { resolveWaitUntil } from "./background";
+
+describe("background work after the Slack acknowledgement", () => {
+  it("uses ctx.waitUntil when the runtime passes ctx", () => {
+    const seen: Promise<unknown>[] = [];
+    resolveWaitUntil({}, { waitUntil: (p: Promise<unknown>) => seen.push(p) })(Promise.resolve(1));
+    expect(seen).toHaveLength(1);
+  });
+
+  it("falls back to req.waitUntil (how nitro on Cloudflare calls the server entry)", () => {
+    const seen: Promise<unknown>[] = [];
+    const req = { waitUntil: (p: Promise<unknown>) => seen.push(p) };
+    resolveWaitUntil(req, undefined)(Promise.resolve(1));
+    expect(seen).toHaveLength(1);
+  });
+
+  it("falls back to req.runtime.cloudflare.context.waitUntil", () => {
+    const seen: Promise<unknown>[] = [];
+    const req = {
+      runtime: { cloudflare: { context: { waitUntil: (p: Promise<unknown>) => seen.push(p) } } },
+    };
+    resolveWaitUntil(req, undefined)(Promise.resolve(1));
+    expect(seen).toHaveLength(1);
+  });
+
+  it("never throws when the work fails or nothing can keep it alive", async () => {
+    const run = resolveWaitUntil({}, undefined);
+    expect(() => run(Promise.reject(new Error("boom")))).not.toThrow();
+    await new Promise((r) => setTimeout(r, 0));
+  });
+});

@@ -12,7 +12,8 @@ export async function slackApi(
   method: string,
   body: Record<string, unknown>,
 ): Promise<SlackApiResult> {
-  const token = process.env["SLACK_BOT_TOKEN"];
+  // Tolerate stray whitespace or quotes from pasting the secret.
+  const token = (process.env["SLACK_BOT_TOKEN"] ?? "").trim().replace(/^["']|["']$/g, "");
   if (!token) return { ok: false, error: "missing_bot_token" };
   const res = await fetch(`${SLACK_API}/${method}`, {
     method: "POST",

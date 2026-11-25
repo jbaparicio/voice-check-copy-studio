@@ -95,13 +95,13 @@ describe("placeholders", () => {
   });
 });
 
-describe("no-dash rule (BRS)", () => {
+describe("no-dash rule (house-style)", () => {
   const brs = { ...kit, noDashes: true };
-  it("does not penalise missing hashtags or a concise BRS argument", () => {
+  it("does not penalise missing hashtags or a concise house-style argument", () => {
     const r = runBrandCheck(body("When does your live team first see the campaign brief?", []), "linkedin", brs);
     expect(r.score).toBe(100);
   });
-  it("still rejects an over-limit BRS post", () => {
+  it("still rejects an over-limit house-style post", () => {
     expect(runBrandCheck(body("a".repeat(3001), []), "linkedin", brs).checks.find((c) => c.id === "length")?.status).toBe("fail");
   });
   it("allows one exclamation elsewhere but not two, without counting mirrored fields", () => {

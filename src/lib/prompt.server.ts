@@ -54,7 +54,7 @@ export interface KeyFact {
   verified: boolean;
 }
 
-export const BRS_PORTFOLIO = `BRS PROJECT-PAGE FORMAT (overrides generic case-study and plain-text output conventions):
+export const BRS_PORTFOLIO = `house-style PROJECT-PAGE FORMAT (overrides generic case-study and plain-text output conventions):
 Use portfolio_format: "brs". No FAQ: faq must be null. No Context / Challenge / Solution headings or stats panel.
 H1: outcome-first discipline plus client plus event/place, shaped "[Discipline] with [Client] at [Event or Place]". Do not invent these details; use a labelled confirmation placeholder if missing. Client permission and NDA rules still take priority.
 Standfirst: hook holds a two-sentence deck, a short confident hook then the headline result with its sourced key number. Put that same deck in bold at the very start of body, directly under the separately stored H1. Missing results require a confirmation placeholder, never an invented number.
@@ -65,8 +65,8 @@ Then ## What we delivered: with a short checklist (use - [x] items), followed by
 Then a **bold one-sentence closing line**, grounded in the project, not a slogan.
 Then ## Credits, grouped under team labels such as ### Core Team, ### Technical Team and ### Spatial Design. Each entry: **Name**: role. External partners: **Company**: function. Use ONLY names and companies in the brief for credits, never borrow people from approved brand facts. Only include applicable groups. If none are supplied use [NEEDS CONFIRMATION: project team names and roles] in a clearly labelled Credits section.
 Then a **bold real question** CTA such as "Planning your next brand experience?" and one short line inviting contact. cta mirrors this question and contact line. This project-page contact ending is intentional, not a social-post slogan closer.
-meta_description: under 155 characters, BRS style "Discover our [place] [type] experience...", using actual project details. h2s mirrors the ## headings in order (including What we delivered and Credits), without Markdown symbols. No hashtags. All other unused fields null.
-Apply all BRS voice, sentence, no-dash, sourcing and clearance rules. Short punchy complete sentences, no stacked prose fragments. This is a portfolio project story, so explaining delivered work is substance, not empty agency promotion. Repeat the public client only where required in H1 and one credit line; avoid repeated names throughout prose.`;
+meta_description: under 155 characters, house-style style "Discover our [place] [type] experience...", using actual project details. h2s mirrors the ## headings in order (including What we delivered and Credits), without Markdown symbols. No hashtags. All other unused fields null.
+Apply all house-style voice, sentence, no-dash, sourcing and clearance rules. Short punchy complete sentences, no stacked prose fragments. This is a portfolio project story, so explaining delivered work is substance, not empty agency promotion. Repeat the public client only where required in H1 and one credit line; avoid repeated names throughout prose.`;
 
 export interface GenerationInput {
   brief: string;
@@ -170,7 +170,7 @@ HONESTY RULES (most important)
 - Never use a superlative ("first", "biggest", "#1", "leading", "best") unless an approved fact supports it.
 
 OUTPUT FORMAT
-- Plain text only. No markdown symbols (#, *, _, **). Use line breaks for structure.${kitForCheck(kit).noDashes ? ' Exception: BRS Website case studies use the project-page Markdown headings, bold text and lists specified in their channel brief; preserve that formatting.' : ""}
+- Plain text only. No markdown symbols (#, *, _, **). Use line breaks for structure.${kitForCheck(kit).noDashes ? ' Exception: house-style Website case studies use the project-page Markdown headings, bold text and lists specified in their channel brief; preserve that formatting.' : ""}
 - "body" is the full post/copy as it should be published, WITHOUT the hashtags.
 - "hook" is the opening line(s) of the body exactly as written at the start of the body.
 - "hashtags" are written without the # symbol. Make them specific and relevant to the content — never generic filler like "marketing", "business", "success", "motivation".
@@ -241,7 +241,7 @@ ${slidersToInstructions(sliders)
 - ${exclamationOk ? "Exclamation marks are allowed but use them rarely." : "Do NOT use any exclamation marks on this channel."}
 
 CHANNEL CONVENTIONS — ${channel.label}
-${brsPortfolio ? "Follow the BRS project-page structure below, not the generic case study." : channel.conventions}
+${brsPortfolio ? "Follow the house-style project-page structure below, not the generic case study." : channel.conventions}
 Use exactly ${hashtagCount} hashtag${hashtagCount === 1 ? "" : "s"}.
 ${extras.join("\n")}
 

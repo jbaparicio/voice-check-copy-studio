@@ -16,7 +16,7 @@ The launches that work start from one idea that can live on a screen and in a ro
 When does your live team first see the campaign brief?`;
 
 // Only fields used by review; no database, account or brand data is changed.
-const kit = { brand: { name: "Battle Royal Studios (BRS)", voice_adjectives: [], sound_like: [], spelling_variant: "en-GB", emoji_policy: "none", exclamation_channels: { linkedin: false } }, rules: [], facts: [], names: [], personas: [], goals: [], examples: [] } as unknown as BrandKit;
+const kit = { brand: { name: "Example Studio", voice_adjectives: [], sound_like: [], spelling_variant: "en-GB", emoji_policy: "none", exclamation_channels: { linkedin: false } }, rules: [{ type: "dont", text: "No dashes." }], facts: [], names: [{ name: "Acme Motors", status: "never" }], personas: [], goals: [], examples: [] } as unknown as BrandKit;
 const input = { brief: "Existing post", keyFacts: [], link: null, personaId: null, goalId: null, exampleIds: [], sliders: normaliseSliders(null), hashtags: {} };
 const FESTIVAL_POST = `Big room. Bright lights. One night nobody forgets.
 
@@ -26,10 +26,10 @@ Comment and we'll send you the full project.
 
 #EventProduction #FestivalDesign
 
-Client: Nordhaven Festival`;
+Client: Riverside Festival`;
 beforeEach(() => write.mockResolvedValue({ data: { score: 0, summary: "", checks: [] } }));
 
-describe("BRS review integration and guardrails", () => {
+describe("house-style review integration and guardrails", () => {
   it("reviews carousel slide copy and catches NDA names in slides", async () => {
     const fields = { ...emptyFields(), body: "Craft shapes how a room feels. What detail stayed with you?", carousel_slides: [
       { headline: "The room starts with the crew", supporting_line: null },
@@ -40,7 +40,7 @@ describe("BRS review integration and guardrails", () => {
     const clean = await runAiReview({ kit, channel: "instagram_carousel", input, fields });
     expect(clean).toMatchObject({ verdict: "Approve", score: 100, checks: [] });
     expect(write.mock.calls[0]?.[0].prompt).toContain("Build from the plan");
-    fields.carousel_slides[1] = { headline: "Halvard Motors", supporting_line: null };
+    fields.carousel_slides[1] = { headline: "Acme Motors", supporting_line: null };
     const nda = await runAiReview({ kit, channel: "instagram_carousel", input, fields });
     expect(nda).toMatchObject({ verdict: "Kill", score: 0 });
   });
@@ -75,7 +75,7 @@ describe("BRS review integration and guardrails", () => {
     expect(review.verdict).toBe("Approve");
     expect(review.score).toBe(100);
   });
-  it.each(["Halvard Motors", "@HalvardMotors", "#HalvardMotors"])("never downgrades NDA mention %s even when AI misses it", async (name) => {
+  it.each(["Acme Motors", "@AcmeMotors", "#AcmeMotors"])("never downgrades NDA mention %s even when AI misses it", async (name) => {
     const review = await runAiReview({ kit, channel: "linkedin", input, fields: { ...emptyFields(), body: `${POST}\n\n${name}` } });
     expect(review.verdict).toBe("Kill");
     expect(review.score).toBe(0);
@@ -83,7 +83,7 @@ describe("BRS review integration and guardrails", () => {
     expect(review.checks[0]?.fix).toBeUndefined();
   });
   it("NDA tags and described images also recommend Kill", async () => {
-    for (const extras of [{ hashtags: ["HalvardMotors"] }, { alt_text: "Halvard Motors launch" }]) {
+    for (const extras of [{ hashtags: ["AcmeMotors"] }, { alt_text: "Acme Motors launch" }]) {
       const review = await runAiReview({ kit, channel: "linkedin", input, fields: { ...emptyFields(), body: POST, ...extras } });
       expect(review.verdict).toBe("Kill");
     }

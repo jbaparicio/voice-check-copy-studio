@@ -167,7 +167,7 @@ export function runBrandCheck(
 
   // 4. Length
   const count = countedText(fields).length;
-  // For BRS, the lower end is advice, not a reason to pad a good argument.
+  // For house-style, the lower end is advice, not a reason to pad a good argument.
   // Upper ranges and platform hard limits still use the existing check.
   const ls = editorial && count > 0 && count < channel.range[0]
     ? "good"
@@ -271,7 +271,7 @@ export function runBrandCheck(
           id: "exclamation",
           label: "Exclamation marks",
           status: "warn",
-          message: editorial && allowed ? "BRS allows at most one exclamation mark on this channel." : `Uses ${bangs} exclamation mark${bangs > 1 ? "s" : ""}. Your brand doesn't use them on ${channel.short}.`,
+          message: editorial && allowed ? "This brand allows at most one exclamation mark on this channel." : `Uses ${bangs} exclamation mark${bangs > 1 ? "s" : ""}. Your brand doesn't use them on ${channel.short}.`,
           fix: editorial && allowed ? "Keep at most one exclamation mark. Change nothing else." : "Replace every exclamation mark with a full stop or rephrase. Change nothing else.",
         }
       : {
@@ -302,7 +302,7 @@ export function runBrandCheck(
             id: "dashes",
             label: "No dashes",
             status: "fail",
-            message: "BRS does not use dashes. Replace with a full stop, comma or colon.",
+            message: "This brand does not use dashes. Replace with a full stop, comma or colon.",
             fix: DASH_FIX,
           }
         : { id: "dashes", label: "No dashes", status: "pass", message: "No dashes used." },

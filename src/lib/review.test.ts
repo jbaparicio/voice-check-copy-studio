@@ -19,7 +19,7 @@ const issue = (impact: ReviewItem["impact"], label = "Editorial issue"): ReviewI
   id: label, category: "rules", label, status: impact === "send_back" || impact === "kill" ? "fail" : "warn", message: label, span: null, badge: null, suggestion: null, impact,
 });
 
-describe("BRS editorial scoring", () => {
+describe("house-style editorial scoring", () => {
   it("approves a clean opinion without demanding evidence", () => {
     expect(editorialDecision([])).toMatchObject({ verdict: "Approve", score: 100, checks: [] });
   });
@@ -34,13 +34,13 @@ describe("BRS editorial scoring", () => {
     expect(editorialDecision([issue("send_back", "Space is the new story.")]).verdict).toBe("Send back");
   });
   it("sends back self-promotion without a fact", () => {
-    expect(editorialDecision([issue("send_back", "BRS self-promotion")]).verdict).toBe("Send back");
+    expect(editorialDecision([issue("send_back", "house-style self-promotion")]).verdict).toBe("Send back");
   });
   it.each(["elevate", "seamless", "game-changer", "unlock", "unforgettable", "synergy", "next-level", "cutting-edge"])("buzzword %s requires an edit", (word) => {
     expect(editorialDecision([issue("edit", word)])).toMatchObject({ verdict: "Approve with edits", score: 95 });
   });
   it("NDA work recommends Kill, never an edit", () => {
-    expect(editorialDecision([issue("edit"), issue("kill", "Halvard Motors")])).toMatchObject({ verdict: "Kill", score: 0, mainProblem: "Halvard Motors" });
+    expect(editorialDecision([issue("edit"), issue("kill")])).toMatchObject({ verdict: "Kill", score: 0, mainProblem: "Editorial issue" });
   });
   it("a repeated public client or missing credit requires a minimal edit", () => {
     expect(editorialDecision([issue("edit", "Client credit")]).verdict).toBe("Approve with edits");

@@ -361,6 +361,24 @@ export type Database = {
           },
         ]
       }
+      demo_ai_usage: {
+        Row: {
+          created_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       examples: {
         Row: {
           body: string
@@ -789,6 +807,7 @@ export type Database = {
       can_access_brand_text: { Args: { _brand: string }; Returns: boolean }
       can_approve_brand: { Args: { _brand: string }; Returns: boolean }
       can_delete_brand: { Args: { _brand: string }; Returns: boolean }
+      claim_demo_ai_action: { Args: never; Returns: string }
       delete_library_content: {
         Args: {
           _brand: string

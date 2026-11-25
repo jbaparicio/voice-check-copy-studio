@@ -24,6 +24,7 @@ import {
   type KeyFact,
 } from "./prompt.server";
 import { runAiReview } from "./review.server";
+import { claimDemoAiAction } from "./demo-quota.server";
 import { applySpanFix, guardSuggestion, toAiReview, type AiReview } from "./review";
 import { locateSelection, SELECTABLE_FIELDS, spliceText, type SelectableField } from "./selection";
 
@@ -121,6 +122,7 @@ export const generateContent = createServerFn({ method: "POST" })
     };
   })
   .handler(async ({ data, context }) => {
+    await claimDemoAiAction(context.supabase);
     const { supabase, userId } = context;
     const kit = await loadBrandKit(supabase, data.brandId);
     const checkKit = kitForCheck(kit);
@@ -273,6 +275,7 @@ export const reviseItem = createServerFn({ method: "POST" })
     },
   )
   .handler(async ({ data, context }) => {
+    await claimDemoAiAction(context.supabase);
     const { supabase, userId } = context;
     const ctx = await loadItemContext(supabase, data.itemId);
     const model = data.model ?? ctx.item.writer_model ?? ctx.model;
@@ -367,6 +370,7 @@ export const rewriteSelection = createServerFn({ method: "POST" })
     },
   )
   .handler(async ({ data, context }) => {
+    await claimDemoAiAction(context.supabase);
     const { supabase, userId } = context;
     const ctx = await loadItemContext(supabase, data.itemId);
     const model = ctx.item.writer_model ?? ctx.model;
@@ -429,6 +433,7 @@ export const generateVariants = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: { itemId: string }) => input)
   .handler(async ({ data, context }) => {
+    await claimDemoAiAction(context.supabase);
     const { supabase, userId } = context;
     const ctx = await loadItemContext(supabase, data.itemId);
     const model = ctx.item.writer_model ?? ctx.model;
@@ -487,6 +492,7 @@ export const suggestHashtags = createServerFn({ method: "POST" })
     body: input.body.slice(0, 6000),
   }))
   .handler(async ({ data, context }) => {
+    await claimDemoAiAction(context.supabase);
     const ctx = await loadItemContext(context.supabase, data.itemId);
     const { data: out } = await writeStructured({
       instructions: buildInstructions(ctx.kit),
@@ -574,6 +580,7 @@ export const checkExistingPost = createServerFn({ method: "POST" })
     },
   )
   .handler(async ({ data, context }) => {
+    await claimDemoAiAction(context.supabase);
     const { supabase, userId } = context;
     const { data: request, error: reqError } = await supabase
       .from("content_requests")
@@ -628,6 +635,7 @@ export const reviewItem = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: { itemId: string; current?: ContentFields }) => input)
   .handler(async ({ data, context }) => {
+    await claimDemoAiAction(context.supabase);
     const ctx = await loadItemContext(context.supabase, data.itemId);
     const fields = data.current ? cleanFields(data.current) : ctx.current;
     return saveReviewed(context.supabase, context.userId, ctx, fields, "reviewed", {});
@@ -653,6 +661,7 @@ export const fixFlag = createServerFn({ method: "POST" })
     }),
   )
   .handler(async ({ data, context }) => {
+    await claimDemoAiAction(context.supabase);
     const ctx = await loadItemContext(context.supabase, data.itemId);
     const current = cleanFields(data.current);
     let fields = current;

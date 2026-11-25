@@ -36,6 +36,8 @@ export const extractGuideline = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: { fileId: string }) => input)
   .handler(async ({ data, context }) => {
+    const { claimDemoAiAction } = await import("./demo-quota.server");
+    await claimDemoAiAction(context.supabase);
     const { supabase } = context;
     const { data: file, error } = await supabase
       .from("guideline_files")

@@ -10,6 +10,7 @@ import { checkPastedPost } from "@/lib/content-core.server";
 import { claimDemoAiAction } from "@/lib/demo-quota.server";
 import {
   decidedMessage,
+  esc,
   HELP_TEXT,
   queueMessage,
   reasonModal,
@@ -223,7 +224,7 @@ async function runCheck(
       elements: [
         {
           type: "mrkdwn",
-          text: "Only you can see this. Invite the app to this channel so the team can review here.",
+          text: `Only you can see this: the app couldn't post to the channel (${esc(posted.error ?? "unknown")}). If it says not_in_channel, invite the app here.`,
         },
       ],
     });

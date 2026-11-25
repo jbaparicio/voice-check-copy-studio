@@ -17,6 +17,20 @@ export interface StoredItemRow {
   status: string;
 }
 
+/**
+ * The post as a reader sees it. Pasted posts mirror their first paragraph into `hook` and
+ * their last into `cta`, so only add those when the body doesn't already contain them.
+ */
+export function postText(fields: ContentFields): string {
+  const body = (fields.body ?? "").trim();
+  if (!body) return allText({ ...fields, hashtags: fields.hashtags ?? [] });
+  const hook = (fields.hook ?? "").trim();
+  const cta = (fields.cta ?? "").trim();
+  return [hook && !body.startsWith(hook) ? hook : "", body, cta && !body.endsWith(cta) ? cta : ""]
+    .filter(Boolean)
+    .join("\n\n");
+}
+
 export function toSlackSummary(row: StoredItemRow): SlackItemSummary {
   const fields = (row.fields ?? {}) as ContentFields;
   const review = toAiReview(row.ai_review);
@@ -33,7 +47,7 @@ export function toSlackSummary(row: StoredItemRow): SlackItemSummary {
   return {
     id: row.id,
     channel: row.channel as ChannelId,
-    text: allText({ ...fields, hashtags: fields.hashtags ?? [] }),
+    text: postText(fields),
     score: row.brand_score,
     verdict: review?.verdict ?? null,
     summary: review?.main_problem || review?.summary || null,

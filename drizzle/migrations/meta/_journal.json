@@ -36,6 +36,20 @@
       "when": 1795612081029,
       "tag": "0004_demo_brand_packaging_studio",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1795612364712,
+      "tag": "0005_demo_brand_sportswear",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1795612384815,
+      "tag": "0006_demo_brand_fix_values",
+      "breakpoints": true
     }
   ]
 }

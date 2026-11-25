@@ -74,7 +74,14 @@ function quote(text: string): string {
 
 function verdictLine(item: SlackItemSummary): string {
   const score = item.score === null ? "not scored" : `${item.score}/100`;
-  const verdict = item.verdict ? `*${esc(item.verdict)}*` : "*No recommendation*";
+  // Show the saved verdict when there is one; otherwise count what was flagged rather than
+  // inventing a recommendation the review didn't make.
+  const n = item.flags.length;
+  const verdict = item.verdict
+    ? `*${esc(item.verdict)}*`
+    : n
+      ? `*${n} issue${n === 1 ? "" : "s"} flagged*`
+      : "*Nothing flagged*";
   return `${verdict} · brand score ${score}`;
 }
 
@@ -152,7 +159,8 @@ export function reviewMessage(
       },
     ],
   });
-  return { text: `${channelLabel} checked: ${item.verdict ?? "no recommendation"}`, blocks };
+  const headline = item.verdict ?? `${item.flags.length} issues flagged`;
+  return { text: `${channelLabel} checked: ${headline}`, blocks };
 }
 
 /** Replaces the review message once a person has decided: no buttons left to press twice. */

@@ -446,3 +446,39 @@ describe("background work after the Slack acknowledgement", () => {
     await new Promise((r) => setTimeout(r, 0));
   });
 });
+
+import { postText } from "./summary";
+
+describe("Slack card polish", () => {
+  it("doesn't repeat a pasted post whose hook and CTA mirror the body", () => {
+    const line = "Saturday, 8:00. 5K, every pace welcome.";
+    const f = { hook: line, body: line, cta: "", hashtags: [] } as unknown as Parameters<
+      typeof postText
+    >[0];
+    expect(postText(f)).toBe(line);
+  });
+
+  it("keeps a separate hook and CTA when the body doesn't contain them", () => {
+    const f = {
+      hook: "Big news.",
+      body: "We open Saturday.",
+      cta: "See you there.",
+      hashtags: [],
+    } as unknown as Parameters<typeof postText>[0];
+    expect(postText(f)).toBe("Big news.\n\nWe open Saturday.\n\nSee you there.");
+  });
+
+  it("counts flags instead of inventing a verdict when none was saved", () => {
+    const m = reviewMessage(
+      { ...summary, verdict: null },
+      { appUrl: "https://app.test", submittedBy: "U1" },
+    );
+    expect(JSON.stringify(m.blocks)).toContain("2 issues flagged");
+    expect(JSON.stringify(m.blocks)).not.toContain("No recommendation");
+    const clean = reviewMessage(
+      { ...summary, verdict: null, flags: [] },
+      { appUrl: "https://app.test", submittedBy: "U1" },
+    );
+    expect(JSON.stringify(clean.blocks)).toContain("Nothing flagged");
+  });
+});

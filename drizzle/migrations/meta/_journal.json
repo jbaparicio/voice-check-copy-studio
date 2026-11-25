@@ -29,6 +29,13 @@
       "when": 1795611819601,
       "tag": "0003_guest_demo_ai_quota",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1795612081029,
+      "tag": "0004_demo_brand_packaging_studio",
+      "breakpoints": true
     }
   ]
 }
